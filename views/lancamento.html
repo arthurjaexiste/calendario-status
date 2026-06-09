@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lançamento - Diário de Bordo</title>
+    <link rel="stylesheet" href="/static/css/lancamento.css">
+</head>
+
+<body>
+
+    <div class="form-container">
+        <h2>Lançamento de Jornada</h2>
+        <form id="formLancamento">
+            <div class="form-group">
+                <label for="nome">Nome do Funcionário *</label>
+                <input type="text" id="nome" required placeholder="Ex: João Silva">
+            </div>
+            <div class="form-group">
+                <label for="cargo">Cargo *</label>
+                <select id="cargo" required>
+                    <option value="" disabled selected>Selecione...</option>
+                    <option value="Motorista">Motorista</option>
+                    <option value="Ajudante">Ajudante</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Status do Evento *</label>
+                <select id="status" required>
+                    <option value="" disabled selected>Selecione...</option>
+                    <option value="ROTA">Em Rota</option>
+                    <option value="FOLGA">Folga</option>
+                    <option value="FÉRIAS">Férias</option>
+                    <option value="SUSPENSÃO">Suspensão</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="data_inicio">Data e Hora de Início *</label>
+                <input type="datetime-local" id="data_inicio" required>
+            </div>
+            <div class="form-group">
+                <label for="data_fim">Data e Hora de Fim (Opcional)</label>
+                <input type="datetime-local" id="data_fim">
+            </div>
+            <div class="form-group">
+                <label for="observacao">Observações de Campo</label>
+                <textarea id="observacao" placeholder="Detalhes da rota, motivo da suspensão, etc..."></textarea>
+            </div>
+            <button type="submit">Salvar Registro</button>
+            <div id="msgStatus" class="mensagem"></div>
+        </form>
+    </div>
+
+    <script src="/static/js/lancamento.js"></script>
+</body>
+
+</html>

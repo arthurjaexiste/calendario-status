@@ -26,17 +26,24 @@ type Evento struct {
 	ExtendedProps ExtendedProps `json:"extendedProps"`
 }
 
+type Lancamento struct {
+	NomeFuncionario string `json:"nome_funcionario"`
+	Cargo           string `json:"cargo"`
+	StatusEvento    string `json:"status_evento"`
+	DataInicio      string `json:"data_inicio"`
+	DataFim         string `json:"data_fim"`
+	Observacao      string `json:"observacao"`
+}
+
 func main() {
-	// Lendo as credenciais de forma segura do arquivo .env (injetado pelo Docker)
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_DATABASE")
 
-	// Montando a string de conexão dinamicamente
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPass, dbHost, dbPort, dbName)
-	
+
 	var db *sql.DB
 	var err error
 
@@ -45,17 +52,37 @@ func main() {
 		if err == nil {
 			err = db.Ping()
 			if err == nil {
-				log.Println("Conectado ao MariaDB com sucesso e em segurança!")
+				log.Println("Conectado ao MariaDB com sucesso!")
 				break
 			}
 		}
 		time.Sleep(3 * time.Second)
 	}
 
+	// ==========================================
+	// SERVIDOR DE ARQUIVOS ESTÁTICOS (NOVO)
+	// ==========================================
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// ==========================================
+	// ROTAS DE INTERFACE (Páginas HTML)
+	// ==========================================
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "index.html")
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, "views/index.html")
 	})
 
+	http.HandleFunc("/lancamento", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "views/lancamento.html")
+	})
+
+	// ==========================================
+	// ROTAS DA API
+	// ==========================================
 	http.HandleFunc("/api/eventos", func(w http.ResponseWriter, r *http.Request) {
 		filtroCargo := r.URL.Query().Get("cargo")
 		filtroStatus := r.URL.Query().Get("status")
@@ -88,14 +115,10 @@ func main() {
 
 			cor := "#3788d8"
 			switch status {
-			case "ROTA":
-				cor = "#1e8e3e"
-			case "FOLGA":
-				cor = "#1967d2"
-			case "FÉRIAS":
-				cor = "#f29900"
-			case "SUSPENSÃO":
-				cor = "#d93025"
+			case "ROTA": cor = "#1e8e3e"
+			case "FOLGA": cor = "#1967d2"
+			case "FÉRIAS": cor = "#f29900"
+			case "SUSPENSÃO": cor = "#d93025"
 			}
 
 			textoObs := "Sem observações registradas."
@@ -104,24 +127,42 @@ func main() {
 			}
 
 			evento := Evento{
-				ID:    id,
-				Title: nome + " - " + status,
-				Start: dataInicio,
-				Color: cor,
-				ExtendedProps: ExtendedProps{
-					Observacao: textoObs,
-					Cargo:      cargo,
-				},
+				ID: id, Title: nome + " - " + status, Start: dataInicio, Color: cor,
+				ExtendedProps: ExtendedProps{ Observacao: textoObs, Cargo: cargo },
 			}
-			if dataFim.Valid {
-				evento.End = dataFim.String
-			}
+			if dataFim.Valid { evento.End = dataFim.String }
 
 			eventos = append(eventos, evento)
 		}
-
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(eventos)
+	})
+
+	http.HandleFunc("/api/salvar", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var l Lancamento
+		err := json.NewDecoder(r.Body).Decode(&l)
+		if err != nil {
+			http.Error(w, "Erro ao ler os dados", http.StatusBadRequest)
+			return
+		}
+
+		var dataFimParam interface{} = nil
+		if l.DataFim != "" { dataFimParam = l.DataFim }
+
+		query := `INSERT INTO eventos_diario (nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?)`
+		_, err = db.Exec(query, l.NomeFuncionario, l.Cargo, l.StatusEvento, l.DataInicio, dataFimParam, l.Observacao)
+		
+		if err != nil {
+			log.Println("Erro ao inserir:", err)
+			http.Error(w, "Erro no banco", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
 	})
 
 	log.Println("Servidor Web rodando na porta 8080...")

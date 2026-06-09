@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Diário de Bordo - RH</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+</head>
+<body>
+
+    <div class="painel-filtros">
+        <div>
+            <label for="filtroCargo"><b>Cargo:</b></label>
+            <select id="filtroCargo" onchange="aplicarFiltros()">
+                <option value="Todos">Todos</option>
+                <option value="Motorista">Motoristas</option>
+                <option value="Ajudante">Ajudantes</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtroStatus"><b>Status:</b></label>
+            <select id="filtroStatus" onchange="aplicarFiltros()">
+                <option value="Todos">Todos</option>
+                <option value="ROTA">Em Rota</option>
+                <option value="FOLGA">Folga</option>
+                <option value="FÉRIAS">Férias</option>
+                <option value="SUSPENSÃO">Suspensão</option>
+            </select>
+        </div>
+        <button onclick="aplicarFiltros()">Atualizar Visualização</button>
+    </div>
+
+    <div id='calendar'></div>
+
+    <div id="modal-detalhes">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-titulo">Título do Evento</h3>
+                <span class="close-btn" onclick="fecharModal()">&times;</span>
+            </div>
+            <div class="info-linha"><strong>Cargo:</strong> <span id="modal-cargo"></span></div>
+            <div class="info-linha"><strong>Início:</strong> <span id="modal-inicio"></span></div>
+            <div class="info-linha"><strong>Fim:</strong> <span id="modal-fim"></span></div>
+            <div class="obs-box">
+                <strong>Observações de Campo:</strong><br>
+                <span id="modal-obs"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/index.js"></script>
+</body>
+</html>
