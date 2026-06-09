@@ -1,0 +1,14 @@
+# Binários do Go
+/api-calendario
+*.exe
+
+# Arquivo de Variáveis de Ambiente (MUITO IMPORTANTE)
+.env
+
+# Pastas de IDEs (VSCode, etc)
+.vscode/
+.idea/
+
+# Diretórios de banco de dados locais (caso mapeados na pasta)
+mysql_data/
+mariadb_data/

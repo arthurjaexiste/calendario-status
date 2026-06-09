@@ -1,0 +1,28 @@
+services:
+  # O Banco de Dados (MariaDB)
+  db:
+    image: mariadb:lts
+    container_name: diario_bordo_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  # O Backend em Go
+  web:
+    build: .
+    container_name: diario_bordo_web
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env  # Injeta as variáveis de ambiente no container Go
+    depends_on:
+      - db
+
+volumes:
+  mariadb_data:
