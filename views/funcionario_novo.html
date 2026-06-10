@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Novo Funcionário</title>
+    <link rel="stylesheet" href="/static/css/lancamento.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Cadastrar Novo Funcionário</h2>
+        <form id="formNovoFunc">
+            <div class="form-group">
+                <label>Nome Completo *</label>
+                <input type="text" id="func_nome" required placeholder="Ex: Pedro Alvares">
+            </div>
+            
+            <div class="form-group">
+                <label>Cargo *</label>
+                <select id="func_cargo" required>
+                    <option value="" disabled selected>Selecione o cargo...</option>
+                    <option value="Motorista">Motorista</option>
+                    <option value="Ajudante">Ajudante</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>CPF *</label>
+                <input type="text" id="func_cpf" required placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Telefone (Opcional)</label>
+                <input type="text" id="func_telefone" placeholder="(27) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Data de Nascimento (Opcional)</label>
+                <input type="date" id="func_nascimento">
+            </div>
+
+            <button type="submit">Salvar Funcionário</button>
+            <button type="button" onclick="window.location.href='/funcionarios'" style="background:#5f6368; margin-top:10px;">Cancelar</button>
+            <div id="msgStatus" class="mensagem"></div>
+        </form>
+    </div>
+    <script src="/static/js/funcionarios.js"></script>
+</body>
+</html>

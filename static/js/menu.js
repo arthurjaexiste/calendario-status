@@ -3,27 +3,26 @@ function toggleSidebar() {
     document.getElementById('overlay').classList.toggle('active');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Captura o perfil do usuário logado através do cookie
+document.addEventListener('DOMContentLoaded', function () {
     const perfilCookie = document.cookie.split('; ').find(row => row.startsWith('auth_perfil='));
     const perfil = perfilCookie ? perfilCookie.split('=')[1] : '';
 
-    // Seleciona os itens da Sidebar para controle visual
+    // Captura os elementos do menu
     const linkLancamento = document.querySelector('a[href="/lancamento"]')?.parentElement;
     const linkUsuarios = document.querySelector('a[href="/usuarios"]')?.parentElement;
-    const linkConfig = document.querySelector('a[href="#"]')?.parentElement; // Exemplo de config
+    const linkFuncionarios = document.querySelector('a[href="/funcionarios"]')?.parentElement;
 
-    // Oculta opções baseado no nível de acesso
+    // Regras de visibilidade baseadas no perfil
     if (perfil === "RH") {
         if (linkLancamento) linkLancamento.style.display = 'none';
         if (linkUsuarios) linkUsuarios.style.display = 'none';
+        // RH pode ver funcionários
     } else if (perfil === "LOGISTICA") {
-        // A logística já cai direto no formulário, mas se abrir a sidebar ocultamos as opções restritas
         if (linkUsuarios) linkUsuarios.style.display = 'none';
+        if (linkFuncionarios) linkFuncionarios.style.display = 'none';
     }
-    // Se for ADMIN, o javascript não esconde nada.
 
-    // Carrega a API de funcionários para o dropdown do menu
+    // Carrega o select de busca de diários
     const select = document.getElementById('selectFuncionario');
     if (select) {
         fetch('/api/funcionarios')

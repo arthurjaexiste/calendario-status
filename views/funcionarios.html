@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Gestão de Funcionários</title>
+    <link rel="stylesheet" href="/static/css/usuarios.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="container-usuarios" style="max-width: 1100px;"> <div class="header-lista">
+            <h2>Gestão de Funcionários</h2>
+            <button class="btn-add" onclick="window.location.href='/funcionario/novo'" title="Cadastrar Funcionário">
+                <i class="fa-solid fa-user-plus"></i>
+            </button>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="buscaFuncionario" placeholder="🔍 Buscar por Nome ou CPF..." onkeyup="filtrarTabela()" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 15px;">
+        </div>
+
+        <table class="tabela-usuarios">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome Completo</th>
+                    <th>Cargo</th>
+                    <th>CPF</th>
+                    <th>Telefone</th>
+                    <th>Data Nasc.</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabelaFunc"></tbody>
+        </table>
+        
+        <button onclick="window.location.href='/'" class="btn-voltar">Voltar ao Menu</button>
+    </div>
+    <script src="/static/js/funcionarios_lista.js"></script>
+</body>
+</html>
