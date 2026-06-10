@@ -35,6 +35,11 @@ type Lancamento struct {
 	Observacao      string `json:"observacao"`
 }
 
+type Credenciais struct {
+	Usuario string `json:"usuario"`
+	Senha   string `json:"senha"`
+}
+
 func main() {
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
@@ -63,47 +68,91 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// ==========================================
-	// ROTAS DE INTERFACE
+	// ROTAS DE INTERFACE (Acesso Unificado: ADMIN)
 	// ==========================================
-	// Tela Inicial (O novo Menu)
+	
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "views/login.html")
+	})
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
 			return
 		}
+		cookie, err := r.Cookie("auth_perfil")
+		// Exige ser ADMIN
+		if err != nil || cookie.Value != "ADMIN" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 		http.ServeFile(w, r, "views/index.html")
 	})
 
-	// Tela do Calendário (Onde o diário isolado será exibido)
 	http.HandleFunc("/diario", func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_perfil")
+		// Exige ser ADMIN
+		if err != nil || cookie.Value != "ADMIN" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 		http.ServeFile(w, r, "views/diario.html")
 	})
 
-	// Tela da Logística
 	http.HandleFunc("/lancamento", func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_perfil")
+		// Exige ser ADMIN
+		if err != nil || cookie.Value != "ADMIN" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 		http.ServeFile(w, r, "views/lancamento.html")
 	})
 
 	// ==========================================
 	// ROTAS DA API
 	// ==========================================
-	
-	// NOVO: Busca apenas os nomes únicos para preencher o Menu
-	http.HandleFunc("/api/funcionarios", func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT DISTINCT nome_funcionario FROM eventos_diario ORDER BY nome_funcionario")
-		if err != nil {
-			http.Error(w, "Erro ao buscar funcionários", http.StatusInternalServerError)
+
+	http.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 			return
 		}
-		defer rows.Close()
 
-		var nomes []string
-		for rows.Next() {
-			var nome string
-			if err := rows.Scan(&nome); err == nil {
-				nomes = append(nomes, nome)
-			}
+		var creds Credenciais
+		json.NewDecoder(r.Body).Decode(&creds)
+
+		var perfil string
+		err := db.QueryRow("SELECT perfil FROM usuarios WHERE usuario = ? AND senha = ?", creds.Usuario, creds.Senha).Scan(&perfil)
+
+		w.Header().Set("Content-Type", "application/json")
+		
+		if err != nil {
+			json.NewEncoder(w).Encode(map[string]interface{}{"sucesso": false})
+			return
 		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "auth_perfil",
+			Value:    perfil,
+			Path:     "/",
+			HttpOnly: true,
+			Expires:  time.Now().Add(8 * time.Hour),
+		})
+
+		// Como é o Admin, vamos redirecionar ele direto para o painel principal do RH
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"sucesso": true,
+			"redirecionar": "/",
+		})
+	})
+
+	http.HandleFunc("/api/funcionarios", func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT DISTINCT nome_funcionario FROM eventos_diario ORDER BY nome_funcionario")
+		if err != nil { http.Error(w, "Erro", 500); return }
+		defer rows.Close()
+		var nomes []string
+		for rows.Next() { var nome string; rows.Scan(&nome); nomes = append(nomes, nome) }
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(nomes)
 	})
@@ -111,48 +160,25 @@ func main() {
 	http.HandleFunc("/api/eventos", func(w http.ResponseWriter, r *http.Request) {
 		filtroFuncionario := r.URL.Query().Get("funcionario")
 		filtroStatus := r.URL.Query().Get("status")
-
 		query := "SELECT id, nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao FROM eventos_diario WHERE 1=1"
 		var args []interface{}
-
-		if filtroFuncionario != "" {
-			query += " AND nome_funcionario = ?"
-			args = append(args, filtroFuncionario)
-		}
-		if filtroStatus != "" && filtroStatus != "Todos" {
-			query += " AND status_evento = ?"
-			args = append(args, filtroStatus)
-		}
-
+		if filtroFuncionario != "" { query += " AND nome_funcionario = ?"; args = append(args, filtroFuncionario) }
+		if filtroStatus != "" && filtroStatus != "Todos" { query += " AND status_evento = ?"; args = append(args, filtroStatus) }
+		
 		rows, err := db.Query(query, args...)
-		if err != nil {
-			http.Error(w, "Erro ao buscar eventos", http.StatusInternalServerError)
-			return
-		}
+		if err != nil { http.Error(w, "Erro", 500); return }
 		defer rows.Close()
 
 		var eventos []Evento
 		for rows.Next() {
 			var id, nome, cargo, status, dataInicio string
 			var dataFim, observacao sql.NullString
-
 			rows.Scan(&id, &nome, &cargo, &status, &dataInicio, &dataFim, &observacao)
-
 			cor := "#3788d8"
-			switch status {
-			case "ROTA": cor = "#1e8e3e"
-			case "FOLGA": cor = "#1967d2"
-			case "FÉRIAS": cor = "#f29900"
-			case "SUSPENSÃO": cor = "#d93025"
-			}
-
+			switch status { case "ROTA": cor = "#1e8e3e"; case "FOLGA": cor = "#1967d2"; case "FÉRIAS": cor = "#f29900"; case "SUSPENSÃO": cor = "#d93025" }
 			textoObs := "Sem observações registradas."
 			if observacao.Valid && observacao.String != "" { textoObs = observacao.String }
-
-			evento := Evento{
-				ID: id, Title: nome + " - " + status, Start: dataInicio, Color: cor,
-				ExtendedProps: ExtendedProps{ Observacao: textoObs, Cargo: cargo },
-			}
+			evento := Evento{ ID: id, Title: nome + " - " + status, Start: dataInicio, Color: cor, ExtendedProps: ExtendedProps{ Observacao: textoObs, Cargo: cargo } }
 			if dataFim.Valid { evento.End = dataFim.String }
 			eventos = append(eventos, evento)
 		}
@@ -165,7 +191,6 @@ func main() {
 		json.NewDecoder(r.Body).Decode(&l)
 		var dataFimParam interface{} = nil
 		if l.DataFim != "" { dataFimParam = l.DataFim }
-
 		query := `INSERT INTO eventos_diario (nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?)`
 		db.Exec(query, l.NomeFuncionario, l.Cargo, l.StatusEvento, l.DataInicio, dataFimParam, l.Observacao)
 		w.WriteHeader(http.StatusCreated)
