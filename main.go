@@ -62,6 +62,10 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
+	// ==========================================
+	// ROTAS DE INTERFACE
+	// ==========================================
+	// Tela Inicial (O novo Menu)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -70,27 +74,50 @@ func main() {
 		http.ServeFile(w, r, "views/index.html")
 	})
 
+	// Tela do Calendário (Onde o diário isolado será exibido)
+	http.HandleFunc("/diario", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "views/diario.html")
+	})
+
+	// Tela da Logística
 	http.HandleFunc("/lancamento", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "views/lancamento.html")
 	})
 
+	// ==========================================
+	// ROTAS DA API
+	// ==========================================
+	
+	// NOVO: Busca apenas os nomes únicos para preencher o Menu
+	http.HandleFunc("/api/funcionarios", func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT DISTINCT nome_funcionario FROM eventos_diario ORDER BY nome_funcionario")
+		if err != nil {
+			http.Error(w, "Erro ao buscar funcionários", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var nomes []string
+		for rows.Next() {
+			var nome string
+			if err := rows.Scan(&nome); err == nil {
+				nomes = append(nomes, nome)
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(nomes)
+	})
+
 	http.HandleFunc("/api/eventos", func(w http.ResponseWriter, r *http.Request) {
-		// Lendo o novo filtro de funcionário vindo do JavaScript
 		filtroFuncionario := r.URL.Query().Get("funcionario")
-		filtroCargo := r.URL.Query().Get("cargo")
 		filtroStatus := r.URL.Query().Get("status")
 
 		query := "SELECT id, nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao FROM eventos_diario WHERE 1=1"
 		var args []interface{}
 
-		// NOVO: Aplica o filtro de busca por texto se o usuário digitar algo
 		if filtroFuncionario != "" {
-			query += " AND nome_funcionario LIKE ?"
-			args = append(args, "%"+filtroFuncionario+"%")
-		}
-		if filtroCargo != "" && filtroCargo != "Todos" {
-			query += " AND cargo = ?"
-			args = append(args, filtroCargo)
+			query += " AND nome_funcionario = ?"
+			args = append(args, filtroFuncionario)
 		}
 		if filtroStatus != "" && filtroStatus != "Todos" {
 			query += " AND status_evento = ?"
@@ -120,16 +147,13 @@ func main() {
 			}
 
 			textoObs := "Sem observações registradas."
-			if observacao.Valid && observacao.String != "" {
-				textoObs = observacao.String
-			}
+			if observacao.Valid && observacao.String != "" { textoObs = observacao.String }
 
 			evento := Evento{
 				ID: id, Title: nome + " - " + status, Start: dataInicio, Color: cor,
 				ExtendedProps: ExtendedProps{ Observacao: textoObs, Cargo: cargo },
 			}
 			if dataFim.Valid { evento.End = dataFim.String }
-
 			eventos = append(eventos, evento)
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -137,29 +161,13 @@ func main() {
 	})
 
 	http.HandleFunc("/api/salvar", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
-			return
-		}
-
 		var l Lancamento
-		err := json.NewDecoder(r.Body).Decode(&l)
-		if err != nil {
-			http.Error(w, "Erro ao ler os dados", http.StatusBadRequest)
-			return
-		}
-
+		json.NewDecoder(r.Body).Decode(&l)
 		var dataFimParam interface{} = nil
 		if l.DataFim != "" { dataFimParam = l.DataFim }
 
 		query := `INSERT INTO eventos_diario (nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?)`
-		_, err = db.Exec(query, l.NomeFuncionario, l.Cargo, l.StatusEvento, l.DataInicio, dataFimParam, l.Observacao)
-		
-		if err != nil {
-			log.Println("Erro ao inserir:", err)
-			http.Error(w, "Erro no banco", http.StatusInternalServerError)
-			return
-		}
+		db.Exec(query, l.NomeFuncionario, l.Cargo, l.StatusEvento, l.DataInicio, dataFimParam, l.Observacao)
 		w.WriteHeader(http.StatusCreated)
 	})
 

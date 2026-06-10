@@ -53,4 +53,30 @@
 
     <script src="/static/js/index.js"></script>
 </body>
+</html><!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Portal RH - Diário de Bordo</title>
+    <link rel="stylesheet" href="/static/css/menu.css">
+</head>
+
+<body>
+    <div class="card-menu">
+        <h2>Consultar Diário de Bordo</h2>
+        <p>Selecione o funcionário que deseja auditar:</p>
+
+        <div class="form-group">
+            <select id="selectFuncionario">
+                <option value="" disabled selected>Carregando funcionários...</option>
+            </select>
+        </div>
+
+        <button onclick="acessarDiario()">Acessar Diário</button>
+    </div>
+
+    <script src="/static/js/menu.js"></script>
+</body>
+
 </html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Diário de Bordo</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+</head>
+<body>
+
+    <div class="painel-filtros" style="justify-content: space-between;">
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <button onclick="window.location.href='/'" style="background-color: #5f6368;">← Voltar</button>
+            <h2 id="titulo-diario" style="margin: 0; color: #202124;">Diário: Carregando...</h2>
+        </div>
+        
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <label for="filtroStatus"><b>Status:</b></label>
+            <select id="filtroStatus" onchange="aplicarFiltros()">
+                <option value="Todos">Todos</option>
+                <option value="ROTA">Em Rota</option>
+                <option value="FOLGA">Folga</option>
+                <option value="FÉRIAS">Férias</option>
+                <option value="SUSPENSÃO">Suspensão</option>
+            </select>
+        </div>
+    </div>
+
+    <div id='calendar'></div>
+
+    <div id="modal-detalhes">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-titulo">Título</h3>
+                <span class="close-btn" onclick="fecharModal()">&times;</span>
+            </div>
+            <div class="info-linha"><strong>Cargo:</strong> <span id="modal-cargo"></span></div>
+            <div class="info-linha"><strong>Início:</strong> <span id="modal-inicio"></span></div>
+            <div class="info-linha"><strong>Fim:</strong> <span id="modal-fim"></span></div>
+            <div class="obs-box"><strong>Observações:</strong><br><span id="modal-obs"></span></div>
+        </div>
+    </div>
+
+    <script src="/static/js/diario.js"></script>
+</body>
+</html>
