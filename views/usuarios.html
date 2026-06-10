@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Gestão de Usuários - Nico Transportes</title>
+    <link rel="stylesheet" href="/static/css/usuarios.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="container-usuarios">
+        <div class="header-lista">
+            <h2>Usuários do Sistema</h2>
+            <button class="btn-add" onclick="window.location.href='/usuario/novo'" title="Cadastrar Novo Usuário">
+                <i class="fa-solid fa-user-plus"></i>
+            </button>
+        </div>
+
+        <table class="tabela-usuarios">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome de Usuário</th>
+                    <th>Perfil / Permissão</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela">
+                </tbody>
+        </table>
+        
+        <button onclick="window.location.href='/'" class="btn-voltar">Voltar ao Menu</button>
+    </div>
+    <script src="/static/js/usuarios_lista.js"></script>
+</body>
+</html>
