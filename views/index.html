@@ -6,18 +6,42 @@
     <link rel="stylesheet" href="/static/css/menu.css">
 </head>
 <body>
-    <div class="card-menu">
-        <h2>Consultar Diário de Bordo</h2>
-        <p>Selecione o funcionário que deseja auditar:</p>
-        
-        <div class="form-group">
-            <select id="selectFuncionario">
-                <option value="" disabled selected>Carregando funcionários...</option>
-            </select>
+    
+    <header class="topbar">
+        <div class="logo">Sistema Diário de Bordo</div>
+        <div class="profile-icon" onclick="toggleSidebar()" title="Abrir Menu">AD</div>
+    </header>
+
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>Menu Administrativo</h3>
+            <span class="close-btn" onclick="toggleSidebar()">&times;</span>
         </div>
-        
-        <button onclick="acessarDiario()">Acessar Diário</button>
+        <ul class="sidebar-menu">
+            <li><a href="/">Consultar Diário</a></li>
+            <li><a href="/lancamento">Lançar Jornada</a></li>
+            <li><a href="#">Usuários do Sistema</a></li>
+            <li><a href="#">Configurações</a></li>
+            <li><a href="/login" style="color: #d93025; font-weight: bold;">Sair</a></li> 
+        </ul>
     </div>
+
+    <main class="main-content">
+        <div class="card-menu">
+            <h2>Consultar Diário de Bordo</h2>
+            <p>Selecione o funcionário que deseja auditar:</p>
+            
+            <div class="form-group">
+                <select id="selectFuncionario">
+                    <option value="" disabled selected>Carregando funcionários...</option>
+                </select>
+            </div>
+            
+            <button class="btn-acessar" onclick="acessarDiario()">Acessar Diário</button>
+        </div>
+    </main>
 
     <script src="/static/js/menu.js"></script>
 </body>
