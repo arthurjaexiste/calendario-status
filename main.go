@@ -59,15 +59,9 @@ func main() {
 		time.Sleep(3 * time.Second)
 	}
 
-	// ==========================================
-	// SERVIDOR DE ARQUIVOS ESTÁTICOS (NOVO)
-	// ==========================================
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// ==========================================
-	// ROTAS DE INTERFACE (Páginas HTML)
-	// ==========================================
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -80,16 +74,20 @@ func main() {
 		http.ServeFile(w, r, "views/lancamento.html")
 	})
 
-	// ==========================================
-	// ROTAS DA API
-	// ==========================================
 	http.HandleFunc("/api/eventos", func(w http.ResponseWriter, r *http.Request) {
+		// Lendo o novo filtro de funcionário vindo do JavaScript
+		filtroFuncionario := r.URL.Query().Get("funcionario")
 		filtroCargo := r.URL.Query().Get("cargo")
 		filtroStatus := r.URL.Query().Get("status")
 
 		query := "SELECT id, nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao FROM eventos_diario WHERE 1=1"
 		var args []interface{}
 
+		// NOVO: Aplica o filtro de busca por texto se o usuário digitar algo
+		if filtroFuncionario != "" {
+			query += " AND nome_funcionario LIKE ?"
+			args = append(args, "%"+filtroFuncionario+"%")
+		}
 		if filtroCargo != "" && filtroCargo != "Todos" {
 			query += " AND cargo = ?"
 			args = append(args, filtroCargo)

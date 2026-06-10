@@ -9,6 +9,10 @@
 <body>
 
     <div class="painel-filtros">
+        <div style="flex-grow: 1; max-width: 300px;">
+            <label for="filtroFuncionario"><b>Qual funcionário deseja procurar?</b></label>
+            <input type="text" id="filtroFuncionario" placeholder="Digite o nome do motorista ou ajudante..." onkeyup="aplicarFiltros()" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-top: 5px;">
+        </div>
         <div>
             <label for="filtroCargo"><b>Cargo:</b></label>
             <select id="filtroCargo" onchange="aplicarFiltros()">
@@ -27,7 +31,6 @@
                 <option value="SUSPENSÃO">Suspensão</option>
             </select>
         </div>
-        <button onclick="aplicarFiltros()">Atualizar Visualização</button>
     </div>
 
     <div id='calendar'></div>
