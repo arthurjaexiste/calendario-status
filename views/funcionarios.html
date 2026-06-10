@@ -3,68 +3,400 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Gestão de Funcionários</title>
-    <link rel="stylesheet" href="/static/css/tabelas.css?v=1">
+    <title>Gerenciamento de Colaboradores - Portal RH</title>
+    <link rel="stylesheet" href="/static/css/tabelas.css?v=15">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+
+    <style>
+        /* Estilos dedicados para o Modal de Edição ficar impecável */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
+            box-sizing: border-box;
+            animation: fadeInModal 0.2s ease-out;
+        }
+
+        @keyframes fadeInModal {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #f9fafb;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-modal-acoes {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-modal-salvar {
+            flex: 1;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .btn-modal-salvar:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-modal-cancelar {
+            flex: 1;
+            background: #f3f4f6;
+            color: #4b5563;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .btn-modal-cancelar:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .btn-editar-colaborador {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .btn-editar-colaborador:hover {
+            background: #1d4ed8;
+        }
+
+        .tag-cargo-tabela {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container-tabela">
-        <div class="header-lista">
-            <h2>Gestão de Funcionários</h2>
-            <button class="btn-add" onclick="window.location.href='/funcionario/novo'" title="Cadastrar Funcionário">
-                <i class="fa-solid fa-user-plus"></i>
+
+    <div class="card-tabela">
+        <div class="card-header">
+            <h2><i class="fa-solid fa-address-book"></i> Colaboradores Cadastrados</h2>
+            <button class="btn-primary" onclick="window.location.href='/funcionario/novo'">
+                <i class="fa-solid fa-user-plus"></i> Novo Colaborador
             </button>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <input type="text" id="buscaFuncionario" placeholder="🔍 Buscar por Nome ou CPF..."
-                onkeyup="filtrarTabela()"
-                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 15px; box-sizing: border-box;">
+        <div style="overflow-x: auto;">
+            <table class="tabela-moderna">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Cargo</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
+                        <th>Nascimento</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaFuncionarios">
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:30px; color: #6b7280;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Carregando colaboradores...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <table class="tabela-padrao">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nome Completo</th>
-                    <th>Cargo</th>
-                    <th>CPF</th>
-                    <th>Telefone</th>
-                    <th>Data Nasc.</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="corpoTabelaFunc">
-                <tr>
-                    <td colspan="7" style="text-align:center; padding:20px;">Buscando funcionários no sistema...</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <button onclick="window.location.href='/'" class="btn-voltar">Voltar ao Menu</button>
+        <button onclick="window.location.href='/'" class="btn-voltar" style="margin-top: 20px;">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Painel
+        </button>
     </div>
 
-    <div id="modalEdicao" class="modal">
-        <div class="modal-conteudo">
-            <h3>Editar Funcionário</h3>
-            <input type="hidden" id="edit_id">
-            <div class="modal-form-group"><label>Nome Completo</label><input type="text" id="edit_nome"
-                    class="modal-input"></div>
-            <div class="modal-form-group"><label>Cargo</label><input type="text" id="edit_cargo" class="modal-input">
-            </div>
-            <div class="modal-form-group"><label>CPF</label><input type="text" id="edit_cpf" class="modal-input"
-                    maxlength="14" oninput="mascaraCPF(this)"></div>
-            <div class="modal-form-group"><label>Telefone</label><input type="text" id="edit_telefone"
-                    class="modal-input" maxlength="15" oninput="mascaraTelefone(this)"></div>
-            <div class="modal-form-group"><label>Data de Nascimento</label><input type="date" id="edit_nascimento"
-                    class="modal-input"></div>
-            <button onclick="salvarEdicao()" class="btn-modal-salvar">Salvar Alterações</button>
-            <button onclick="fecharModal()" class="btn-modal-cancelar">Cancelar</button>
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <h3
+                style="margin-top:0; margin-bottom:20px; color:#111827; font-size:18px; border-bottom:1px solid #e5e7eb; padding-bottom:12px;">
+                <i class="fa-solid fa-user-pen"></i> Editar Registro
+            </h3>
+            <form id="formEditarFunc">
+                <input type="hidden" id="edit_id">
+
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="edit_nome" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Cargo *</label>
+                    <input type="text" id="edit_cargo" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" id="edit_cpf" placeholder="000.000.000-00" maxlength="14"
+                        oninput="mascaraCPF(this)" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="text" id="edit_telefone" placeholder="(00) 00000-0000" maxlength="15"
+                        oninput="mascaraTelefone(this)" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Data de Nascimento</label>
+                    <input type="text" id="edit_nascimento" placeholder="Selecione a data..." autocomplete="off">
+                </div>
+
+                <div id="msgStatusModal" style="text-align:center; font-weight:600; font-size:14px; margin-top:10px;">
+                </div>
+
+                <div class="btn-modal-acoes">
+                    <button type="submit" class="btn-modal-salvar"><i class="fa-solid fa-floppy-disk"></i>
+                        Salvar</button>
+                    <button type="button" class="btn-modal-cancelar" onclick="fecharModal()"><i
+                            class="fa-solid fa-xmark"></i> Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script src="/static/js/funcionario_lista.js?v=1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+
+    <script>
+        // Funções de Máscara Automática
+        function mascaraCPF(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function mascaraTelefone(i) {
+            let v = i.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            i.value = v;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Inicializa o calendário no campo do modal com exibição BR e valor ISO oculto
+            window.calendarioEdit = flatpickr("#edit_nascimento", {
+                altInput: true,
+                altFormat: "d/m/Y",       // Formato visual na tela
+                dateFormat: "Y-m-d",      // Formato puro enviado ao Go/Banco
+                locale: "pt",
+                disableMobile: true
+            });
+
+            // 2. Busca os colaboradores do sistema
+            carregarTabelaColaboradores();
+
+            // 3. Envio dos dados editados para a API do Go
+            const formEditar = document.getElementById('formEditarFunc');
+            if (formEditar) {
+                formEditar.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const msg = document.getElementById('msgStatusModal');
+                    msg.style.color = '#2563eb';
+                    msg.textContent = 'Salvando alterações...';
+
+                    const dados = {
+                        id: parseInt(document.getElementById('edit_id').value),
+                        nome: document.getElementById('edit_nome').value.trim(),
+                        cargo: document.getElementById('edit_cargo').value.trim(),
+                        cpf: document.getElementById('edit_cpf').value.trim(),
+                        telefone: document.getElementById('edit_telefone').value.trim(),
+                        data_nascimento: document.getElementById('edit_nascimento').value
+                    };
+
+                    fetch('/api/funcionarios/editar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dados)
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                msg.style.color = '#1e8e3e';
+                                msg.textContent = '✅ Registro atualizado!';
+                                setTimeout(() => {
+                                    fecharModal();
+                                    carregarTabelaColaboradores();
+                                }, 1200);
+                            } else {
+                                msg.style.color = '#ef4444';
+                                msg.textContent = '⚠️ Erro ao atualizar colaborador.';
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            msg.style.color = '#ef4444';
+                            msg.textContent = '⚠️ Falha de conexão com o servidor.';
+                        });
+                });
+            }
+        });
+
+        // Puxa os dados da API e renderiza as linhas da tabela
+        function carregarTabelaColaboradores() {
+            const corpoTabela = document.getElementById('corpoTabelaFuncionarios');
+            if (!corpoTabela) return;
+
+            fetch('/api/funcionarios/lista')
+                .then(res => res.json())
+                .then(data => {
+                    corpoTabela.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        corpoTabela.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Nenhum colaborador cadastrado.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(f => {
+                        let id = f.id;
+                        let nome = f.nome || '';
+                        let cargo = f.cargo || '';
+                        let cpf = f.cpf || 'Não informado';
+                        let telefone = f.telefone || 'Não informado';
+                        let nascimentoOriginal = f.data_nascimento || '';
+
+                        // Formata a data americana do banco para exibição visual limpa na tabela
+                        let nascimentoExibicao = 'Não informado';
+                        if (nascimentoOriginal && nascimentoOriginal.includes('-')) {
+                            let partes = nascimentoOriginal.split('-');
+                            nascimentoExibicao = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                        } else if (nascimentoOriginal) {
+                            nascimentoExibicao = nascimentoOriginal;
+                        }
+
+                        let tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${id}</strong></td>
+                            <td>${nome}</td>
+                            <td><span class="tag-cargo-tabela">${cargo}</span></td>
+                            <td>${cpf}</td>
+                            <td>${telefone}</td>
+                            <td>${nascimentoExibicao}</td>
+                            <td>
+                                <button class="btn-editar-colaborador" onclick="abrirModalEditar(${id}, '${nome}', '${cargo}', '${cpf}', '${telefone}', '${nascimentoOriginal}')">
+                                    <i class="fa-solid fa-user-gear"></i> Editar
+                                </button>
+                            </td>
+                        `;
+                        corpoTabela.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    corpoTabela.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Erro ao estabelecer comunicação com o servidor.</td></tr>';
+                });
+        }
+
+        // Abre a janela e força o Flatpickr a interpretar e formatar a data recebida do banco
+        function abrirModalEditar(id, nome, cargo, cpf, telefone, dataNascimento) {
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_nome').value = nome;
+            document.getElementById('edit_cargo').value = cargo;
+            document.getElementById('edit_cpf').value = cpf === 'Não informado' ? '' : cpf;
+            document.getElementById('edit_telefone').value = telefone === 'Não informado' ? '' : telefone;
+            document.getElementById('msgStatusModal').textContent = '';
+
+            // Se o dado vier no padrão BR (DD/MM/AAAA), reordena para ISO antes de entregar ao Flatpickr
+            let dataISO = dataNascimento;
+            if (dataNascimento && dataNascimento.includes('/')) {
+                let p = dataNascimento.split('/');
+                dataISO = `${p[2]}-${p[1]}-${p[0]}`;
+            }
+
+            // Entrega o valor tratado para a biblioteca renderizar a máscara
+            if (window.calendarioEdit && dataISO) {
+                window.calendarioEdit.setDate(dataISO, true);
+            } else if (window.calendarioEdit) {
+                window.calendarioEdit.clear();
+            }
+
+            document.getElementById('modalEditar').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalEditar').style.display = 'none';
+        }
+    </script>
 </body>
 
 </html>

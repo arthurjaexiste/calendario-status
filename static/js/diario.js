@@ -1,41 +1,80 @@
-let calendar;
-// Pega o nome do funcionário que veio na URL (ex: ?funcionario=João)
-const urlParams = new URLSearchParams(window.location.search);
-const funcionarioSelecionado = urlParams.get('funcionario');
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const tituloEl = document.getElementById('tituloDiario');
+    const filtroStatus = document.getElementById('filtroStatus');
 
-document.addEventListener('DOMContentLoaded', function () {
-    if (!funcionarioSelecionado) {
-        window.location.href = '/'; // Se tentar acessar direto sem nome, volta pro menu
+    // 1. Extrai o nome do funcionário da barra de endereços (URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const nomeFuncionario = urlParams.get('funcionario') || '';
+
+    // 2. Atualiza o título da tela
+    if (tituloEl) {
+        tituloEl.textContent = nomeFuncionario ? 'Diário: ' + nomeFuncionario : 'Diário Geral (Todos)';
+    }
+
+    if (!calendarEl) {
+        console.error("A div #calendar não foi encontrada no HTML.");
         return;
     }
 
-    document.getElementById('titulo-diario').innerText = `Diário: ${funcionarioSelecionado}`;
-
-    var calendarEl = document.getElementById('calendar');
-    calendar = new FullCalendar.Calendar(calendarEl, {
+    // 3. Monta o Calendário (FullCalendar)
+    const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'pt-br',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-        events: function (info, successCallback, failureCallback) {
-            let status = document.getElementById('filtroStatus').value;
-
-            fetch(`/api/eventos?status=${status}&funcionario=${encodeURIComponent(funcionarioSelecionado)}`)
-                .then(response => response.json())
-                .then(data => successCallback(data))
-                .catch(error => failureCallback(error));
+        height: 700,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
         },
-        eventClick: function (info) {
-            document.getElementById('modal-titulo').innerText = info.event.title;
-            document.getElementById('modal-cargo').innerText = info.event.extendedProps.cargo;
-            document.getElementById('modal-inicio').innerText = info.event.start.toLocaleString('pt-BR');
-            let dataFim = info.event.end ? info.event.end.toLocaleString('pt-BR') : 'Não especificado';
-            document.getElementById('modal-fim').innerText = dataFim;
-            document.getElementById('modal-obs').innerText = info.event.extendedProps.observacao;
-            document.getElementById('modal-detalhes').style.display = 'block';
+        buttonText: {
+            today: 'Hoje',
+            month: 'Mês',
+            week: 'Semana'
+        },
+        
+        // 4. Busca os eventos dinamicamente
+        events: function(fetchInfo, successCallback, failureCallback) {
+            const status = filtroStatus ? filtroStatus.value : 'Todos';
+            let url = `/api/eventos?status=${encodeURIComponent(status)}`;
+            
+            if (nomeFuncionario) {
+                url += `&funcionario=${encodeURIComponent(nomeFuncionario)}`;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Dados recebidos da API:", data);
+                    if (Array.isArray(data)) {
+                        successCallback(data);
+                    } else {
+                        console.error("API não retornou um array:", data);
+                        successCallback([]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição:', error);
+                    failureCallback(error);
+                });
+        },
+        
+        // 5. Exibe os detalhes da observação ao clicar no evento
+        eventClick: function(info) {
+            const titulo = info.event.title;
+            const cargo = info.event.extendedProps.cargo || 'Não informado';
+            const obs = info.event.extendedProps.observacao || 'Nenhuma observação registrada.';
+            
+            alert(`📌 EVENTO: ${titulo}\n💼 CARGO: ${cargo}\n\n📝 OBSERVAÇÃO:\n${obs}`);
         }
     });
-    calendar.render();
-});
 
-function aplicarFiltros() { calendar.refetchEvents(); }
-function fecharModal() { document.getElementById('modal-detalhes').style.display = 'none'; }
+    calendar.render();
+
+    // 6. Atualiza a tela automaticamente quando você muda o Filtro de Status
+    if (filtroStatus) {
+        filtroStatus.addEventListener('change', function() {
+            calendar.refetchEvents();
+        });
+    }
+});

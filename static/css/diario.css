@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Card Principal que envelopa o Calendário */
+.card-diario {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Cabeçalho Customizado (Botão Voltar, Título e Filtro) */
+.diario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-esquerda h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #111827;
+    text-transform: capitalize;
+}
+
+.header-direita {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-direita label {
+    font-weight: 600;
+    color: #4b5563;
+    font-size: 14px;
+}
+
+/* Botões e Inputs */
+.btn-voltar {
+    padding: 10px 16px;
+    background: #f3f4f6;
+    color: #4b5563;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-voltar:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.input-moderno {
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1f2937;
+    background: #f9fafb;
+    transition: 0.2s;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.input-moderno:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* =========================================
+   CUSTOMIZAÇÃO DO FULLCALENDAR
+   ========================================= */
+#calendar {
+    margin-top: 10px;
+}
+
+/* Título do mês no topo do calendário */
+.fc .fc-toolbar-title {
+    font-size: 20px !important;
+    font-weight: 700;
+    color: #111827;
+    text-transform: capitalize;
+}
+
+/* Botões de navegação (Hoje, <, >, Mês, Semana) */
+.fc .fc-button-primary {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+    border-radius: 6px !important;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+}
+
+.fc .fc-button-primary:disabled {
+    background-color: #93c5fd !important;
+    border-color: #93c5fd !important;
+}
+
+.fc .fc-button-active {
+    background-color: #1e40af !important;
+    border-color: #1e40af !important;
+}
+
+/* Dias da semana no cabeçalho */
+.fc-theme-standard th {
+    background-color: #f9fafb;
+    padding: 10px 0;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border-color: #e5e7eb !important;
+}
+
+/* Bordas gerais da grade */
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: #e5e7eb !important;
+}
+
+/* Dia atual destacado */
+.fc .fc-day-today {
+    background-color: #eff6ff !important;
+}
+
+/* Eventos na grade */
+.fc-event {
+    border-radius: 4px !important;
+    border: none !important;
+    padding: 2px 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}

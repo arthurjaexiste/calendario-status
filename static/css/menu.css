@@ -1,61 +1,56 @@
-/* Ajuste do layout geral para suportar a barra superior */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
     margin: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Barra Superior */
+/* Topbar & Sidebar */
 .topbar {
-    background-color: white;
-    padding: 10px 30px;
+    background: #ffffff;
+    padding: 16px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 10;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.topbar .logo {
-    font-weight: bold;
-    font-size: 18px;
-    color: #5f6368;
+.logo {
+    font-weight: 700;
+    font-size: 20px;
+    color: #111827;
 }
 
-/* Bolinha de Perfil */
 .profile-icon {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background-color: #4285F4;
+    background: #2563eb;
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    user-select: none;
-    font-size: 16px;
-    transition: background 0.2s;
+    transition: 0.2s;
 }
 
 .profile-icon:hover {
-    background-color: #3367d6;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
 }
 
-/* Menu Lateral (Escondido por padrão na direita) */
 .sidebar {
     position: fixed;
     top: 0;
-    right: -280px;
-    width: 280px;
+    right: -300px;
+    width: 300px;
     height: 100%;
-    background-color: white;
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.05);
     transition: right 0.3s ease;
     z-index: 1000;
     display: flex;
@@ -64,57 +59,50 @@ body {
 
 .sidebar.open {
     right: 0;
-    /* Desliza para dentro da tela */
 }
 
 .sidebar-header {
-    padding: 20px 25px;
+    padding: 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .sidebar-header h3 {
     margin: 0;
-    color: #202124;
-    font-size: 16px;
+    font-size: 18px;
+    color: #111827;
 }
 
 .close-btn {
-    font-size: 28px;
+    font-size: 24px;
     cursor: pointer;
-    color: #888;
-    font-weight: bold;
-}
-
-.close-btn:hover {
-    color: #d93025;
+    color: #6b7280;
 }
 
 .sidebar-menu {
     list-style: none;
     padding: 0;
     margin: 0;
-    flex-grow: 1;
 }
 
 .sidebar-menu li a {
     display: block;
-    padding: 18px 25px;
+    padding: 16px 24px;
     text-decoration: none;
-    color: #5f6368;
-    border-bottom: 1px solid #f8f9fa;
-    transition: background 0.2s;
-    font-weight: bold;
+    color: #4b5563;
+    font-weight: 500;
+    border-bottom: 1px solid #f3f4f6;
+    transition: 0.2s;
 }
 
 .sidebar-menu li a:hover {
-    background-color: #e8eaed;
-    color: #4285F4;
+    background-color: #f9fafb;
+    color: #2563eb;
+    padding-left: 30px;
 }
 
-/* Fundo escuro quando o menu abre */
 .overlay {
     position: fixed;
     top: 0;
@@ -133,61 +121,107 @@ body {
     visibility: visible;
 }
 
-/* Centro da Tela (Card) */
-.main-content {
-    flex-grow: 1;
+/* Dashboard Card */
+.container-dash {
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 20px;
+    padding: 60px 20px;
 }
 
 .card-menu {
-    background: white;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     text-align: center;
 }
 
 .card-menu h2 {
     margin-top: 0;
-    color: #202124;
+    color: #111827;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
 }
 
-.card-menu p {
-    color: #5f6368;
-    margin-bottom: 25px;
-}
-
-.form-group select {
+/* Menu de Busca Estilizado (Dropdown Bonito) */
+.dropdown-container {
+    position: relative;
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    margin-bottom: 20px;
-    outline: none;
+    text-align: left;
+    margin-bottom: 24px;
 }
 
-.form-group select:focus {
-    border-color: #4285F4;
+.input-busca {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #1f2937;
+    background: #f9fafb;
+    transition: 0.2s;
+    box-sizing: border-box;
+}
+
+.input-busca:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.dropdown-lista {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin-top: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 50;
+    display: none;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background-color: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+    padding-left: 20px;
 }
 
 .btn-acessar {
     width: 100%;
-    padding: 12px;
-    background-color: #4285F4;
-    color: white;
+    padding: 14px;
+    background: #2563eb;
+    color: #fff;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
+    transition: 0.2s;
 }
 
 .btn-acessar:hover {
-    background-color: #3367d6;
+    background: #1d4ed8;
 }

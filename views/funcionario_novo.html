@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="utf-8" />
-    <title>Novo Funcionário</title>
-    <link rel="stylesheet" href="/static/css/lancamento.css">
+    <title>Novo Colaborador - Portal RH</title>
+    <link rel="stylesheet" href="/static/css/lancamento.css?v=14">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
 </head>
-
 <body>
     <div class="form-container">
-        <h2>Cadastrar Novo Funcionário</h2>
+        <h2><i class="fa-solid fa-user-plus"></i> Cadastrar Colaborador</h2>
+        
         <form id="formNovoFunc">
             <div class="form-group">
                 <label>Nome Completo *</label>
-                <input type="text" id="func_nome" required placeholder="Ex: Pedro Alvares">
+                <input type="text" id="func_nome" required placeholder="Ex: Arthur Salles">
             </div>
 
             <div class="form-group">
@@ -27,28 +30,41 @@
 
             <div class="form-group">
                 <label>CPF *</label>
-                <input type="text" id="func_cpf" required placeholder="000.000.000-00" maxlength="14"
-                    oninput="mascaraCPF(this)">
+                <input type="text" id="func_cpf" required placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
             </div>
 
             <div class="form-group">
-                <label>Telefone (Opcional)</label>
-                <input type="text" id="func_telefone" placeholder="(27) 99999-9999" maxlength="15"
-                    oninput="mascaraTelefone(this)">
+                <label>Telefone</label>
+                <input type="text" id="func_telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTelefone(this)">
             </div>
 
             <div class="form-group">
-                <label>Data de Nascimento (Opcional)</label>
-                <input type="date" id="func_nascimento">
+                <label>Data de Nascimento</label>
+                <input type="text" id="func_nascimento" class="data-brasil" placeholder="Selecione a data de nascimento..." autocomplete="off">
             </div>
 
-            <button type="submit">Salvar Funcionário</button>
-            <button type="button" onclick="window.location.href='/funcionarios'"
-                style="background:#5f6368; margin-top:10px;">Cancelar</button>
+            <button type="submit"><i class="fa-solid fa-check"></i> Salvar Registro</button>
+            <button type="button" onclick="window.location.href='/funcionarios'"><i class="fa-solid fa-xmark"></i> Cancelar</button>
             <div id="msgStatus" class="mensagem"></div>
         </form>
     </div>
-    <script src="/static/js/funcionarios.js"></script>
-</body>
+    
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aplica o calendário APENAS COM DATA e Formato Brasileiro
+            flatpickr(".data-brasil", {
+                altInput: true,
+                altFormat: "d/m/Y",      // O que aparece na tela: 28/02/2026
+                dateFormat: "Y-m-d",     // O que vai pro banco de dados
+                locale: "pt",
+                disableMobile: "true"
+            });
+        });
+    </script>
+
+    <script src="/static/js/funcionarios.js?v=14"></script>
+</body>
 </html>

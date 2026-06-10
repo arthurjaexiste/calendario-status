@@ -3,27 +3,80 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Login - Diário de Bordo</title>
-    <link rel="stylesheet" href="/static/css/login.css">
+    <title>Login - Portal RH</title>
+    <link rel="stylesheet" href="/static/css/login.css?v=6">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
-    <div class="login-container">
-        <h2>Acesso ao Sistema</h2>
+    <div class="card-login">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i class="fa-solid fa-truck-fast" style="font-size: 40px; color: #2563eb; margin-bottom: 10px;"></i>
+            <h2 style="margin: 0; color: #111827;">Portal do Colaborador</h2>
+            <p style="color: #6b7280; font-size: 14px;">Faça login para acessar o sistema</p>
+        </div>
+
         <form id="formLogin">
             <div class="form-group">
-                <label for="usuario">Usuário</label>
-                <input type="text" id="usuario" required>
+                <label>Usuário</label>
+                <input type="text" id="usuario" class="input-moderno" placeholder="Digite seu usuário" required>
             </div>
             <div class="form-group">
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" required>
+                <label>Senha</label>
+                <input type="password" id="senha" class="input-moderno" placeholder="••••••••" required>
             </div>
-            <button type="submit">Entrar</button>
-            <div id="msgErro" class="mensagem-erro"></div>
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+            </button>
+            <div id="mensagem"
+                style="margin-top: 15px; text-align: center; font-weight: 600; font-size: 14px; min-height: 20px;">
+            </div>
         </form>
     </div>
-    <script src="/static/js/login.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('formLogin');
+            const msg = document.getElementById('mensagem');
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                msg.style.color = '#2563eb';
+                msg.textContent = 'Autenticando...';
+
+                const dados = {
+                    Usuario: document.getElementById('usuario').value.trim(),
+                    Senha: document.getElementById('senha').value.trim()
+                };
+
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                })
+                    .then(async res => {
+                        const texto = await res.text();
+                        if (!res.ok) throw new Error("Erro: " + res.status);
+                        return JSON.parse(texto);
+                    })
+                    .then(data => {
+                        if (data.sucesso) {
+                            msg.style.color = '#1e8e3e';
+                            msg.textContent = 'Login efetuado! Redirecionando...';
+                            setTimeout(() => { window.location.href = data.redirecionar || '/'; }, 500);
+                        } else {
+                            msg.style.color = '#ef4444';
+                            msg.textContent = '⚠️ Usuário ou senha incorretos.';
+                        }
+                    })
+                    .catch(err => {
+                        msg.style.color = '#ef4444';
+                        msg.textContent = '⚠️ Erro de conexão com o servidor.';
+                    });
+            });
+        });
+    </script>
 </body>
 
 </html>

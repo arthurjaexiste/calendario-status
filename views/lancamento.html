@@ -1,58 +1,72 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lançamento - Diário de Bordo</title>
-    <link rel="stylesheet" href="/static/css/lancamento.css">
+    <title>Lançamento de Jornada - Portal RH</title>
+    
+    <link rel="stylesheet" href="/static/css/lancamento.css?v=16">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
 </head>
-
 <body>
-
     <div class="form-container">
-        <h2>Lançamento de Jornada</h2>
+        <h2><i class="fa-solid fa-pen-to-square"></i> Lançamento de Jornada</h2>
+        
         <form id="formLancamento">
             <div class="form-group">
-                <label for="nome">Nome do Funcionário *</label>
-                <input type="text" id="nome" required placeholder="Ex: João Silva">
+                <label>Nome do Funcionário *</label>
+                <select id="nome_funcionario" required>
+                    <option value="" disabled selected>Carregando funcionários...</option>
+                </select>
             </div>
+
             <div class="form-group">
-                <label for="cargo">Cargo *</label>
+                <label>Cargo *</label>
                 <select id="cargo" required>
-                    <option value="" disabled selected>Selecione...</option>
+                    <option value="" disabled selected>Selecione o cargo...</option>
                     <option value="Motorista">Motorista</option>
                     <option value="Ajudante">Ajudante</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label for="status">Status do Evento *</label>
-                <select id="status" required>
-                    <option value="" disabled selected>Selecione...</option>
+                <label>Status do Evento *</label>
+                <select id="status_evento" required>
+                    <option value="" disabled selected>Selecione o status...</option>
                     <option value="ROTA">Em Rota</option>
                     <option value="FOLGA">Folga</option>
                     <option value="FÉRIAS">Férias</option>
                     <option value="SUSPENSÃO">Suspensão</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label for="data_inicio">Data e Hora de Início *</label>
-                <input type="datetime-local" id="data_inicio" required>
+                <label>Data e Hora de Início *</label>
+                <input type="text" id="data_inicio" class="data-hora-brasil" placeholder="Selecione a data e hora..." required autocomplete="off">
             </div>
+
             <div class="form-group">
-                <label for="data_fim">Data e Hora de Fim (Opcional)</label>
-                <input type="datetime-local" id="data_fim">
+                <label>Data e Hora de Fim (Opcional)</label>
+                <input type="text" id="data_fim" class="data-hora-brasil" placeholder="Selecione a data e hora (Opcional)..." autocomplete="off">
             </div>
+
             <div class="form-group">
-                <label for="observacao">Observações de Campo</label>
-                <textarea id="observacao" placeholder="Detalhes da rota, motivo da suspensão, etc..."></textarea>
+                <label>Observações de Campo</label>
+                <textarea id="observacao" rows="3" placeholder="Detalhes da rota, motivo da suspensão, etc." style="resize: vertical;"></textarea>
             </div>
-            <button type="submit">Salvar Registro</button>
+
+            <button type="submit"><i class="fa-solid fa-save"></i> Salvar Registro</button>
+            <button type="button" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> Voltar ao Painel</button>
+            
             <div id="msgStatus" class="mensagem"></div>
         </form>
     </div>
 
-    <script src="/static/js/lancamento.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 
+    <script src="/static/js/lancamento.js?v=16"></script>
+</body>
 </html>
