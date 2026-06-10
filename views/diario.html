@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="utf-8" />
     <title>Diário de Bordo</title>
     <link rel="stylesheet" href="/static/css/index.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 </head>
+
 <body>
 
     <div class="painel-filtros" style="justify-content: space-between;">
@@ -13,7 +15,7 @@
             <button onclick="window.location.href='/'" style="background-color: #5f6368;">← Voltar</button>
             <h2 id="titulo-diario" style="margin: 0; color: #202124;">Diário: Carregando...</h2>
         </div>
-        
+
         <div style="display: flex; gap: 10px; align-items: center;">
             <label for="filtroStatus"><b>Status:</b></label>
             <select id="filtroStatus" onchange="aplicarFiltros()">
@@ -27,7 +29,6 @@
     </div>
 
     <div id='calendar'></div>
-
     <div id="modal-detalhes">
         <div class="modal-content">
             <div class="modal-header">
@@ -43,4 +44,5 @@
 
     <script src="/static/js/diario.js"></script>
 </body>
+
 </html>

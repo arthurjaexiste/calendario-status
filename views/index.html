@@ -4,6 +4,66 @@
     <meta charset="utf-8" />
     <title>Portal RH - Diário de Bordo</title>
     <link rel="stylesheet" href="/static/css/menu.css">
+    <style>
+        /* Estilização do novo Dropdown de Pesquisa Inteligente */
+        .dropdown-pesquisa {
+            position: relative;
+            width: 100%;
+            text-align: left;
+        }
+        .input-busca {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        .input-busca:focus {
+            border-color: #4285F4;
+            outline: none;
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.3);
+        }
+        .dropdown-resultados {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            color: #333;
+            font-size: 15px;
+            border-bottom: 1px solid #f5f5f5;
+            transition: background 0.15s;
+        }
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .dropdown-item:hover {
+            background-color: #f1f3f4;
+            color: #1a73e8;
+            font-weight: bold;
+        }
+        .dropdown-item.sem-resultado {
+            color: #888;
+            cursor: default;
+            background: none !important;
+            font-weight: normal !important;
+        }
+    </style>
 </head>
 <body>
     
@@ -16,7 +76,7 @@
 
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <h3>Menu Administrativo</h3>
+            <h3>Menu Administrative</h3>
             <span class="close-btn" onclick="toggleSidebar()">&times;</span>
         </div>
         <ul class="sidebar-menu">
@@ -35,9 +95,12 @@
             <p>Selecione o funcionário que deseja auditar:</p>
             
             <div class="form-group">
-                <select id="selectFuncionario">
-                    <option value="" disabled selected>Carregando funcionários...</option>
-                </select>
+                <div class="dropdown-pesquisa">
+                    <input type="text" id="inputBuscaFuncionario" class="input-busca" placeholder="🔍 Clique ou digite o nome do funcionário..." autocomplete="off">
+                    <div id="listaDropdownFunc" class="dropdown-resultados">
+                        <div class="dropdown-item sem-resultado">Carregando quadro de funcionários...</div>
+                    </div>
+                </div>
             </div>
             
             <button class="btn-acessar" onclick="acessarDiario()">Acessar Diário</button>

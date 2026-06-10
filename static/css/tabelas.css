@@ -1,0 +1,195 @@
+/* =========================================
+   LAYOUT GERAL DAS TELAS DE LISTAGEM
+   ========================================= */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    /* Fundo cinza bonito */
+    margin: 0;
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container-tabela {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Sombra do card */
+    width: 100%;
+    max-width: 1100px;
+}
+
+.header-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f1f3f4;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.header-lista h2 {
+    margin: 0;
+    color: #202124;
+    font-size: 24px;
+}
+
+/* Botões Globais */
+.btn-add {
+    background: #4285F4;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s;
+}
+
+.btn-add:hover {
+    background: #3367d6;
+}
+
+.btn-voltar {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #e8eaed;
+    color: #5f6368;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.btn-voltar:hover {
+    background: #dadce0;
+    color: #202124;
+}
+
+/* =========================================
+   ESTILO DAS TABELAS
+   ========================================= */
+.tabela-padrao {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.tabela-padrao th,
+.tabela-padrao td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+}
+
+.tabela-padrao th {
+    background-color: #f8f9fa;
+    color: #5f6368;
+    font-weight: bold;
+}
+
+.tabela-padrao tbody tr:hover {
+    background-color: #f1f3f4;
+}
+
+/* =========================================
+   ESTILOS DA JANELA MODAL (Fica oculta)
+   ========================================= */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    backdrop-filter: blur(3px);
+}
+
+.modal-conteudo {
+    background: white;
+    width: 450px;
+    margin: 8% auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.modal-conteudo h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+    border-bottom: 2px solid #f1f3f4;
+    padding-bottom: 10px;
+}
+
+.modal-form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.modal-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+    font-size: 14px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 15px;
+    background-color: #fafafa;
+}
+
+.modal-input:focus {
+    border-color: #4285F4;
+    background-color: #fff;
+    outline: none;
+    box-shadow: 0 0 4px rgba(66, 133, 244, 0.4);
+}
+
+.btn-modal-salvar {
+    background: #1e8e3e;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn-modal-salvar:hover {
+    background: #197b35;
+}
+
+.btn-modal-cancelar {
+    background: #5f6368;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn-modal-cancelar:hover {
+    background: #4e5256;
+}

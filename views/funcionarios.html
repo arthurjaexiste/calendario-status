@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="utf-8" />
     <title>Gestão de Funcionários</title>
-    <link rel="stylesheet" href="/static/css/usuarios.css"> 
+    <link rel="stylesheet" href="/static/css/tabelas.css?v=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+
 <body>
-    <div class="container-usuarios" style="max-width: 1100px;">
+    <div class="container-tabela">
         <div class="header-lista">
             <h2>Gestão de Funcionários</h2>
             <button class="btn-add" onclick="window.location.href='/funcionario/novo'" title="Cadastrar Funcionário">
@@ -16,10 +18,12 @@
         </div>
 
         <div style="margin-bottom: 20px;">
-            <input type="text" id="buscaFuncionario" placeholder="🔍 Buscar por Nome ou CPF..." onkeyup="filtrarTabela()" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 15px;">
+            <input type="text" id="buscaFuncionario" placeholder="🔍 Buscar por Nome ou CPF..."
+                onkeyup="filtrarTabela()"
+                style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 15px; box-sizing: border-box;">
         </div>
 
-        <table class="tabela-usuarios">
+        <table class="tabela-padrao">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -31,12 +35,36 @@
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="corpoTabelaFunc"></tbody>
+            <tbody id="corpoTabelaFunc">
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:20px;">Buscando funcionários no sistema...</td>
+                </tr>
+            </tbody>
         </table>
-        
+
         <button onclick="window.location.href='/'" class="btn-voltar">Voltar ao Menu</button>
     </div>
-    
-    <script src="/static/js/funcionarios_lista.js?v=999"></script>
+
+    <div id="modalEdicao" class="modal">
+        <div class="modal-conteudo">
+            <h3>Editar Funcionário</h3>
+            <input type="hidden" id="edit_id">
+            <div class="modal-form-group"><label>Nome Completo</label><input type="text" id="edit_nome"
+                    class="modal-input"></div>
+            <div class="modal-form-group"><label>Cargo</label><input type="text" id="edit_cargo" class="modal-input">
+            </div>
+            <div class="modal-form-group"><label>CPF</label><input type="text" id="edit_cpf" class="modal-input"
+                    maxlength="14" oninput="mascaraCPF(this)"></div>
+            <div class="modal-form-group"><label>Telefone</label><input type="text" id="edit_telefone"
+                    class="modal-input" maxlength="15" oninput="mascaraTelefone(this)"></div>
+            <div class="modal-form-group"><label>Data de Nascimento</label><input type="date" id="edit_nascimento"
+                    class="modal-input"></div>
+            <button onclick="salvarEdicao()" class="btn-modal-salvar">Salvar Alterações</button>
+            <button onclick="fecharModal()" class="btn-modal-cancelar">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="/static/js/funcionario_lista.js?v=1"></script>
 </body>
+
 </html>

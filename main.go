@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -22,20 +21,16 @@ func main() {
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPass, dbHost, dbPort, dbName)
 
-	var db *sql.DB
-	var err error
-
-	for i := 0; i < 10; i++ {
-		db, err = sql.Open("mysql", dsn)
-		if err == nil {
-			err = db.Ping()
-			if err == nil {
-				log.Println("Conectado ao MariaDB com sucesso!")
-				break
-			}
-		}
-		time.Sleep(3 * time.Second)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal("Erro ao abrir conexão com o banco:", err)
 	}
+	
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Não foi possível conectar ao MariaDB:", err)
+	}
+	log.Println("Conectado ao MariaDB com sucesso!")
 
 	// Instancia o Handler injetando a conexão do banco nele
 	h := &handlers.Handler{DB: db}
@@ -44,7 +39,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// ==========================================
-	// ROTAS DE INTERFACE
+	// ROTAS DE INTERFACE (VIEWS)
 	// ==========================================
 	http.HandleFunc("/login", h.Login)
 	http.HandleFunc("/", h.Index)
@@ -56,16 +51,19 @@ func main() {
 	http.HandleFunc("/funcionario/novo", h.FuncionarioNovo)
 
 	// ==========================================
-	// ROTAS DA API
+	// ROTAS DA API (JSON)
 	// ==========================================
 	http.HandleFunc("/api/login", h.ApiLogin)
 	http.HandleFunc("/api/usuarios/lista", h.ApiUsuariosLista)
 	http.HandleFunc("/api/usuarios", h.ApiCriarUsuario)
+	
+	// APIs de Funcionários (Mestre, Edição e Legada)
 	http.HandleFunc("/api/funcionarios/lista", h.ApiFuncionariosLista)
 	http.HandleFunc("/api/funcionarios/salvar", h.ApiFuncionariosSalvar)
-	
-	// APIs legadas do Diário/Calendário
+	http.HandleFunc("/api/funcionarios/editar", h.ApiFuncionariosEditar) // Rota da modal mapeada
 	http.HandleFunc("/api/funcionarios", h.ApiFuncionariosLegada)
+	
+	// APIs do Diário/Calendário
 	http.HandleFunc("/api/eventos", h.ApiEventos)
 	http.HandleFunc("/api/salvar", h.ApiSalvarEvento)
 
