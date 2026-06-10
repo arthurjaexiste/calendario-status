@@ -5,8 +5,13 @@ import (
 	"net/http"
 )
 
+// A struct Handler é declarada APENAS aqui para evitar duplicidade no pacote
 type Handler struct {
 	DB *sql.DB
+}
+
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "views/login.html")
 }
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
@@ -20,10 +25,6 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.ServeFile(w, r, "views/index.html")
-}
-
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "views/login.html")
 }
 
 func (h *Handler) Diario(w http.ResponseWriter, r *http.Request) {

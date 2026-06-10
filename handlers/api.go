@@ -88,16 +88,21 @@ func (h *Handler) ApiCriarUsuario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// ApiFuncionariosLista - TOTALMENTE BLINDADA CONTRA ERROS E NULLS
 func (h *Handler) ApiFuncionariosLista(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth_perfil")
 	if err != nil || (cookie.Value != "ADMIN" && cookie.Value != "RH") {
-		http.Error(w, "Não autorizado", http.StatusForbidden)
+		http.Error(w, "Acesso negado por Cookie", http.StatusForbidden)
 		return
 	}
-	rows, err := h.DB.Query("SELECT id, nome, cargo, cpf, telefone, COALESCE(DATE_FORMAT(data_nascimento, '%d/%m/%Y'), '') FROM funcionarios ORDER BY nome")
+
+	// COALESCE evita que colunas nulas quebrem a execução do Scan do Go
+	query := `SELECT id, nome, cargo, COALESCE(cpf, ''), COALESCE(telefone, ''), COALESCE(DATE_FORMAT(data_nascimento, '%d/%m/%Y'), '') FROM funcionarios ORDER BY nome`
+	
+	rows, err := h.DB.Query(query)
 	if err != nil {
-		log.Println("Erro no banco:", err)
-		http.Error(w, "Erro no banco", 500)
+		log.Println("❌ Erro na query do banco:", err)
+		http.Error(w, "Erro interno na query do banco", 500)
 		return
 	}
 	defer rows.Close()
@@ -105,10 +110,18 @@ func (h *Handler) ApiFuncionariosLista(w http.ResponseWriter, r *http.Request) {
 	var lista []models.Funcionario
 	for rows.Next() {
 		var f models.Funcionario
-		if err := rows.Scan(&f.ID, &f.Nome, &f.Cargo, &f.CPF, &f.Telefone, &f.DataNascimento); err == nil {
-			lista = append(lista, f)
+		if err := rows.Scan(&f.ID, &f.Nome, &f.Cargo, &f.CPF, &f.Telefone, &f.DataNascimento); err != nil {
+			log.Println("❌ Erro no scan de linha:", err)
+			continue
 		}
+		lista = append(lista, f)
 	}
+
+	// Garante que se a lista estiver vazia retorne [] e não null no JSON
+	if lista == nil {
+		lista = []models.Funcionario{}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lista)
 }
@@ -120,6 +133,7 @@ func (h *Handler) ApiFuncionariosSalvar(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if r.Method != http.MethodPost {
+		http.Error(w, "Método inválido", 405)
 		return
 	}
 	var f models.Funcionario
@@ -134,7 +148,7 @@ func (h *Handler) ApiFuncionariosSalvar(w http.ResponseWriter, r *http.Request) 
 	_, err = h.DB.Exec(query, f.Nome, f.Cargo, f.CPF, f.Telefone, dataParam)
 	if err != nil {
 		log.Println("Erro ao salvar funcionário:", err)
-		http.Error(w, "Erro ao salvar ou CPF já cadastrado.", http.StatusInternalServerError)
+		http.Error(w, "Erro ao salvar funcionário", 500)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

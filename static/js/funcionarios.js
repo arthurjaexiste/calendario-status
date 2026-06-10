@@ -1,7 +1,12 @@
 document.getElementById('formNovoFunc').addEventListener('submit', function(e) {
     e.preventDefault();
     const msgStatus = document.getElementById('msgStatus');
-    msgStatus.style.display = 'none';
+    
+    if (msgStatus) {
+        msgStatus.style.display = 'none';
+        msgStatus.textContent = '';
+        msgStatus.className = 'mensagem'; // reseta classes
+    }
 
     const dados = {
         nome: document.getElementById('func_nome').value,
@@ -18,43 +23,61 @@ document.getElementById('formNovoFunc').addEventListener('submit', function(e) {
     })
     .then(res => {
         if (res.ok) {
-            window.location.href = '/funcionarios';
+            if (msgStatus) {
+                msgStatus.textContent = "✅ Funcionário cadastrado com sucesso!";
+                msgStatus.className = "mensagem sucesso";
+                msgStatus.style.display = "block";
+                msgStatus.style.backgroundColor = "#e6f4ea";
+                msgStatus.style.color = "#1e8e3e";
+                msgStatus.style.padding = "10px";
+                msgStatus.style.borderRadius = "4px";
+                msgStatus.style.marginTop = "15px";
+                msgStatus.style.textAlign = "center";
+                msgStatus.style.fontWeight = "bold";
+            }
+            
+            // Limpa o formulário após o sucesso
+            document.getElementById('formNovoFunc').reset();
+
+            // Espera 2 segundos para o usuário ver o feedback e depois redireciona
+            setTimeout(() => {
+                window.location.href = '/funcionarios';
+            }, 2000);
         } else {
             throw new Error();
         }
     })
     .catch(() => {
-        msgStatus.textContent = "Erro ao cadastrar funcionário. Verifique se o CPF já existe.";
-        msgStatus.className = "mensagem erro";
-        msgStatus.style.display = "block";
+        if (msgStatus) {
+            msgStatus.textContent = "❌ Erro ao cadastrar funcionário. Verifique se o CPF já existe.";
+            msgStatus.className = "mensagem erro";
+            msgStatus.style.display = "block";
+            msgStatus.style.backgroundColor = "#fce8e6";
+            msgStatus.style.color = "#d93025";
+            msgStatus.style.padding = "10px";
+            msgStatus.style.borderRadius = "4px";
+            msgStatus.style.marginTop = "15px";
+            msgStatus.style.textAlign = "center";
+            msgStatus.style.fontWeight = "bold";
+        }
     });
 });
 
-// Função que formata o CPF em tempo real (xxx.xxx.xxx-xx)
 function mascaraCPF(input) {
-    // Remove tudo o que não for número
     let v = input.value.replace(/\D/g, "");
-
-    // Aplica a formatação por etapas de digitação
     if (v.length <= 11) {
         v = v.replace(/(\d{3})(\d)/, "$1.$2");
         v = v.replace(/(\d{3})(\d)/, "$1.$2");
         v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     }
-
     input.value = v;
 }
 
-// Função que formata o Telefone em tempo real ((xx) xxxxx-xxxx)
 function mascaraTelefone(input) {
-    // Remove tudo o que não for número
     let v = input.value.replace(/\D/g, "");
-
-    // Aplica os parênteses e o hífen
     if (v.length <= 11) {
         v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
         v = v.replace(/(\d{5})(\d)/, "$1-$2");
     }
-
     input.value = v;
 }
