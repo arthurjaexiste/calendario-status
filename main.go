@@ -60,7 +60,7 @@ func main() {
 	// APIs de Funcionários (Mestre, Edição e Legada)
 	http.HandleFunc("/api/funcionarios/lista", h.ApiFuncionariosLista)
 	http.HandleFunc("/api/funcionarios/salvar", h.ApiFuncionariosSalvar)
-	http.HandleFunc("/api/funcionarios/editar", h.ApiFuncionariosEditar) // Rota da modal mapeada
+	http.HandleFunc("/api/funcionarios/editar", h.ApiFuncionariosEditar)
 	http.HandleFunc("/api/funcionarios", h.ApiFuncionariosLegada)
 	
 	// APIs do Diário/Calendário

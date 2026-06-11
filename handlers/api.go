@@ -11,6 +11,10 @@ import (
 	"calendario/models"
 )
 
+// =========================================================================
+// 1. APIs DE AUTENTICAÇÃO E USUÁRIOS
+// =========================================================================
+
 func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -65,6 +69,10 @@ func (h *Handler) ApiCriarUsuario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// =========================================================================
+// 2. APIs DE JORNADAS E EVENTOS (CALENDÁRIO)
+// =========================================================================
+
 func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 	filtroFuncionario := r.URL.Query().Get("funcionario")
 	filtroStatus := r.URL.Query().Get("status")
@@ -97,9 +105,13 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 		case "SUSPENSÃO": cor = "#d93025"
 		}
 		textoObs := "Sem observações."
-		if observacao.Valid && observacao.String != "" { textoObs = observacao.String }
+		if observacao.Valid && observacao.String != "" {
+			textoObs = observacao.String
+		}
 		evento := models.Evento{ID: id, Title: nome + " - " + status, Start: dataInicio, Color: cor, ExtendedProps: models.ExtendedProps{Observacao: textoObs, Cargo: cargo}}
-		if dataFim.Valid { evento.End = dataFim.String }
+		if dataFim.Valid {
+			evento.End = dataFim.String
+		}
 		eventos = append(eventos, evento)
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -109,48 +121,103 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ApiSalvarEvento(w http.ResponseWriter, r *http.Request) {
 	var l models.Lancamento
 	if err := json.NewDecoder(r.Body).Decode(&l); err != nil {
-		http.Error(w, "JSON inválido", 400); return
+		http.Error(w, "JSON inválido", 400)
+		return
 	}
 	dataInicio := strings.Replace(l.DataInicio, "T", " ", 1)
 	var dataFim interface{} = nil
-	if l.DataFim != "" { dataFim = strings.Replace(l.DataFim, "T", " ", 1) }
-	
-	_, err := h.DB.Exec("INSERT INTO eventos_diario (nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?)", 
+	if l.DataFim != "" {
+		dataFim = strings.Replace(l.DataFim, "T", " ", 1)
+	}
+
+	_, err := h.DB.Exec("INSERT INTO eventos_diario (nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?)",
 		l.NomeFuncionario, l.Cargo, l.StatusEvento, dataInicio, dataFim, l.Observacao)
 	if err != nil {
-		log.Println("Erro SQL:", err); http.Error(w, "Erro", 500); return
+		log.Println("Erro SQL:", err)
+		http.Error(w, "Erro", 500)
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
 }
 
+// =========================================================================
+// 3. APIs DE GESTÃO DE FUNCIONÁRIOS
+// =========================================================================
+
 func (h *Handler) ApiFuncionariosLista(w http.ResponseWriter, r *http.Request) {
-	rows, _ := h.DB.Query("SELECT id, nome, cargo FROM funcionarios ORDER BY nome")
+	query := `SELECT id, nome, cargo, COALESCE(cpf, ''), COALESCE(telefone, ''), COALESCE(DATE_FORMAT(data_nascimento, '%Y-%m-%d'), '') FROM funcionarios ORDER BY nome`
+	rows, err := h.DB.Query(query)
+	if err != nil {
+		log.Println("Erro no banco (Lista Func):", err)
+		http.Error(w, "Erro no banco", 500)
+		return
+	}
 	defer rows.Close()
+
 	var lista []models.Funcionario
 	for rows.Next() {
 		var f models.Funcionario
-		rows.Scan(&f.ID, &f.Nome, &f.Cargo)
+		if err := rows.Scan(&f.ID, &f.Nome, &f.Cargo, &f.CPF, &f.Telefone, &f.DataNascimento); err != nil {
+			log.Println("Erro ao ler linha:", err)
+			continue
+		}
 		lista = append(lista, f)
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lista)
 }
 
 func (h *Handler) ApiFuncionariosSalvar(w http.ResponseWriter, r *http.Request) {
 	var f models.Funcionario
-	json.NewDecoder(r.Body).Decode(&f)
-	h.DB.Exec("INSERT INTO funcionarios (nome, cargo) VALUES (?, ?)", f.Nome, f.Cargo)
+	if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+		http.Error(w, "JSON inválido", 400)
+		return
+	}
+
+	var dataNasc interface{} = nil
+	if f.DataNascimento != "" {
+		dataNasc = f.DataNascimento
+	}
+
+	query := "INSERT INTO funcionarios (nome, cargo, cpf, telefone, data_nascimento) VALUES (?, ?, ?, ?, ?)"
+	_, err := h.DB.Exec(query, f.Nome, f.Cargo, f.CPF, f.Telefone, dataNasc)
+	if err != nil {
+		log.Println("Erro ao salvar funcionário no banco:", err)
+		http.Error(w, "Erro interno", 500)
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handler) ApiFuncionariosEditar(w http.ResponseWriter, r *http.Request) {
 	var f models.Funcionario
-	json.NewDecoder(r.Body).Decode(&f)
-	h.DB.Exec("UPDATE funcionarios SET nome=?, cargo=? WHERE id=?", f.Nome, f.Cargo, f.ID)
+	if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+		http.Error(w, "JSON inválido", 400)
+		return
+	}
+
+	var dataNasc interface{} = nil
+	if f.DataNascimento != "" {
+		dataNasc = f.DataNascimento
+	}
+
+	query := "UPDATE funcionarios SET nome=?, cargo=?, cpf=?, telefone=?, data_nascimento=? WHERE id=?"
+	_, err := h.DB.Exec(query, f.Nome, f.Cargo, f.CPF, f.Telefone, dataNasc, f.ID)
+	if err != nil {
+		log.Println("Erro ao editar funcionário no banco:", err)
+		http.Error(w, "Erro interno", 500)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) ApiFuncionariosLegada(w http.ResponseWriter, r *http.Request) {
-	rows, _ := h.DB.Query("SELECT DISTINCT nome_funcionario FROM eventos_diario")
+	rows, err := h.DB.Query("SELECT DISTINCT nome_funcionario FROM eventos_diario ORDER BY nome_funcionario")
+	if err != nil {
+		http.Error(w, "Erro", 500)
+		return
+	}
 	defer rows.Close()
 	var nomes []string
 	for rows.Next() {
@@ -158,5 +225,6 @@ func (h *Handler) ApiFuncionariosLegada(w http.ResponseWriter, r *http.Request) 
 		rows.Scan(&nome)
 		nomes = append(nomes, nome)
 	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(nomes)
 }
