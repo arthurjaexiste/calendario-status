@@ -50,9 +50,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     msg.style.color = '#1e8e3e';
                     msg.textContent = 'Login efetuado! Redirecionando...';
                 }
+                // Uso de replace() para que o login não fique no histórico de navegação
                 const destino = data.redirecionar || '/home';
                 console.log('Redirecionando para:', destino);
-                window.location.href = destino;
+                window.location.replace(destino);
             } else {
                 if (msg) {
                     msg.style.color = '#ef4444';

@@ -45,7 +45,7 @@ func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 		Name:     "auth_perfil",
 		Value:    perfil,
 		Path:     "/",
-		HttpOnly: true,
+		HttpOnly: false, 
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(8 * time.Hour),
 	})

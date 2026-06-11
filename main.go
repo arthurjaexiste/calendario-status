@@ -91,10 +91,11 @@ func main() {
 	// ROTAS DE INTERFACE (VIEWS)
 	// ==========================================
 	http.HandleFunc("/login", h.Login)
-	http.HandleFunc("/", h.Login)
+	http.HandleFunc("/", h.Index)
 	http.HandleFunc("/home", h.Index)
 	http.HandleFunc("/diario", h.Diario)
 	http.HandleFunc("/lancamento", h.Lancamento)
+
 	http.HandleFunc("/usuarios", h.Usuarios)
 	http.HandleFunc("/usuario/novo", h.UsuarioNovo)
 	http.HandleFunc("/funcionarios", h.Funcionarios)

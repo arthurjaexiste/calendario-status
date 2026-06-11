@@ -14,11 +14,13 @@ type Handler struct {
 // O GUARDA: VERIFICA SE O CARA TÁ LOGADO
 // =========================================================================
 func (h *Handler) verificarAuth(w http.ResponseWriter, r *http.Request) bool {
-	_, err := r.Cookie("auth_perfil")
-	if err != nil {
+	cookie, err := r.Cookie("auth_perfil")
+	if err != nil || cookie.Value == "" {
+		// Se realmente não tem cookie, redireciona
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return false
 	}
+	// Tem cookie e tem valor, deixa passar
 	return true
 }
 
