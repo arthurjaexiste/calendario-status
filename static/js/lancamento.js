@@ -19,7 +19,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    // Configuração para campos de data (com hora)
     flatpickr(".data-hora-brasil", flatpickrConfig);
+
+    // Configuração para campos de data (apenas data)
+    flatpickr("#data_selecionada", {
+        altInput: true,
+        altFormat: "d/m/Y",
+        dateFormat: "Y-m-d",
+        locale: "pt",
+        disableMobile: true,
+    });
+
+    // Configuração para campos de hora (apenas hora)
+    flatpickr(".hora-input", {
+        enableTime: true,
+        time_24hr: true,
+        altInput: true,
+        altFormat: "H:i",
+        dateFormat: "H:i",
+        locale: "pt",
+        disableMobile: true,
+    });
 
     const selectFuncionario = document.getElementById('nome_funcionario');
     const form = document.getElementById('formLancamento');
@@ -63,25 +84,38 @@ document.addEventListener('DOMContentLoaded', function () {
             const msg = document.getElementById('msgStatus');
 
             // Reset de estado
-            msg.className = 'status-msg'; // Reseta classes
+            msg.className = 'mensagem'; // Reseta classes
             msg.style.color = '#2563eb';
             msg.textContent = '⏳ Processando lançamento...';
+
+            // Captura os valores dos novos campos
+            const dataSelecionada = document.getElementById('data_selecionada').value; // YYYY-MM-DD
+            const horaEntrada = document.getElementById('hora_entrada').value; // HH:mm
+            const horaSaida = document.getElementById('hora_saida').value;     // HH:mm
+
+            // Validação básica no front
+            if (!dataSelecionada || !horaEntrada) {
+                msg.textContent = '❌ Data e Hora de Entrada são obrigatórios!';
+                msg.style.color = '#ef4444';
+                msg.classList.add('status-msg');
+                return;
+            }
+
+            // Constrói as strings no formato ISO que o backend espera (YYYY-MM-DDTHH:mm)
+            const dataInicioISO = `${dataSelecionada}T${horaEntrada}`;
+            let dataFimISO = "";
+            if (horaSaida) {
+                dataFimISO = `${dataSelecionada}T${horaSaida}`;
+            }
 
             const dados = {
                 nome_funcionario: selectFuncionario.value,
                 cargo: document.getElementById('cargo').value,
                 status_evento: document.getElementById('status_evento').value,
-                data_inicio: document.getElementById('data_inicio').value,
-                data_fim: document.getElementById('data_fim').value,
+                data_inicio: dataInicioISO,
+                data_fim: dataFimISO,
                 observacao: document.getElementById('observacao').value
             };
-
-            // Validação básica no front
-            if (!dados.nome_funcionario || !dados.data_inicio) {
-                msg.textContent = '❌ Funcionário e Data de Início são obrigatórios!';
-                msg.style.color = '#ef4444';
-                return;
-            }
 
             fetch('/api/salvar', {
                 method: 'POST',
@@ -92,14 +126,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (res.ok) {
                     msg.textContent = '✅ Lançamento registrado com sucesso!';
                     msg.style.color = '#1e8e3e';
+                    msg.classList.add('status-msg');
                     form.reset();
+
                     // Re-inicializa os campos de data após o reset
-                    document.querySelectorAll('.data-hora-brasil').forEach(el => {
+                    document.querySelectorAll('.data-input, .hora-input').forEach(el => {
                         if (el._flatpickr) {
                             el._flatpickr.clear();
                         }
                     });
-                    
+
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
                     return res.text().then(text => { throw new Error(text) });
@@ -109,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Erro ao salvar:', err);
                 msg.textContent = '❌ ' + err.message;
                 msg.style.color = '#ef4444';
+                msg.classList.add('status-msg');
             });
         });
     }

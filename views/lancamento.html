@@ -39,17 +39,24 @@
                     <option value="FOLGA">Folga</option>
                     <option value="FÉRIAS">Férias</option>
                     <option value="SUSPENSÃO">Suspensão</option>
+                    <option value="ATESTADO">Atestado</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Data e Hora de Início *</label>
-                <input type="text" id="data_inicio" class="data-hora-brasil" placeholder="Selecione a data e hora..." required autocomplete="off">
+                <label>Data *</label>
+                <input type="text" id="data_selecionada" class="data-input" placeholder="Selecione a data..." required autocomplete="off">
             </div>
 
-            <div class="form-group">
-                <label>Data e Hora de Fim (Opcional)</label>
-                <input type="text" id="data_fim" class="data-hora-brasil" placeholder="Selecione a data e hora (Opcional)..." autocomplete="off">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hora de Entrada *</label>
+                    <input type="text" id="hora_entrada" class="hora-input" placeholder="00:00" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Hora de Saída (Opcional)</label>
+                    <input type="text" id="hora_saida" class="hora-input" placeholder="00:00" autocomplete="off">
+                </div>
             </div>
 
             <div class="form-group">

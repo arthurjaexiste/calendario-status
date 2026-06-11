@@ -36,9 +36,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
             } else {
                 // Gráfico Real
-                const colorMap = { 'ROTA': '#1e8e3e', 'FOLGA': '#1967d2', 'FERIAS': '#f29900', 'SUSPENSAO': '#d93025' };
-                const colors = labels.map(label => colorMap[label] || '#cccccc');
-
+                        const colorMap = { 'ROTA': '#1e8e3e', 'FOLGA': '#1967d2', 'FERIAS': '#f29900', 'SUSPENSAO': '#d93025', 'ATESTADO': '#9ca3af' };
+                        const colors = labels.map(label => colorMap[label] || '#cccccc');
                 new Chart(ctx.getContext('2d'), {
                     type: 'doughnut',
                     data: {
@@ -61,7 +60,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 'ROTA': { title: 'Em Rota', color: '#1e8e3e' },
                 'FOLGA': { title: 'Em Folga', color: '#1967d2' },
                 'FERIAS': { title: 'Em Férias', color: '#f29900' },
-                'SUSPENSAO': { title: 'Suspensos', color: '#d93025' }
+                'SUSPENSAO': { title: 'Suspensos', color: '#d93025' },
+                'ATESTADO': { title: 'Atestados', color: '#9ca3af' }
             };
 
             Object.keys(statusConfig).forEach(status => {

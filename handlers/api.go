@@ -122,6 +122,7 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 		case "FOLGA": cor = "#1967d2"
 		case "FÉRIAS": cor = "#f29900"
 		case "SUSPENSÃO": cor = "#d93025"
+		case "ATESTADO": cor = "#9ca3af"
 		}
 		textoObs := "Sem observações."
 		if observacao.Valid && observacao.String != "" {
@@ -289,12 +290,14 @@ func (h *Handler) ApiDashboardStats(w http.ResponseWriter, r *http.Request) {
 		"FOLGA":     0,
 		"FERIAS":    0,
 		"SUSPENSAO": 0,
+		"ATESTADO":  0,
 	}
 	detalhes := map[string][]map[string]string{
 		"ROTA":      {},
 		"FOLGA":     {},
 		"FERIAS":    {},
 		"SUSPENSAO": {},
+		"ATESTADO":  {},
 	}
 
 	query := `
@@ -320,6 +323,8 @@ func (h *Handler) ApiDashboardStats(w http.ResponseWriter, r *http.Request) {
 				normStatus = "FERIAS"
 			case "SUSPENSÃO":
 				normStatus = "SUSPENSAO"
+			case "ATESTADO":
+				normStatus = "ATESTADO"
 			}
 
 			if _, ok := stats[normStatus]; ok {
