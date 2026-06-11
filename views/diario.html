@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <title>Diário de Bordo - Portal RH</title>
-    <link rel="stylesheet" href="/static/css/diario.css?v=11">
+    
+    <link rel="stylesheet" href="/static/css/diario.css?v=13">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
@@ -34,80 +35,36 @@
         <div id="calendar"></div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
-            const tituloEl = document.getElementById('tituloDiario');
-            const filtroStatus = document.getElementById('filtroStatus');
+    <div id="eventModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Detalhes do Evento</h3>
+                <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-item">
+                    <label><i class="fa-solid fa-user"></i> Funcionário</label>
+                    <p id="modalFuncionario">-</p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fa-solid fa-briefcase"></i> Cargo</label>
+                    <p id="modalCargo">-</p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fa-solid fa-calendar-day"></i> Data/Hora</label>
+                    <p id="modalData">-</p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fa-solid fa-comment-dots"></i> Observação</label>
+                    <div class="obs-box" id="modalObservacao">-</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-close-modal" onclick="closeModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
 
-            if (!calendarEl) {
-                alert("Erro grave: Container do calendário não existe no HTML.");
-                return;
-            }
-
-            if (typeof FullCalendar === 'undefined') {
-                alert("Erro: O FullCalendar não baixou. Verifique se a tag <script> do CDN está no cabeçalho.");
-                return;
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const nomeFuncionario = urlParams.get('funcionario') || '';
-
-            if (tituloEl) {
-                tituloEl.textContent = nomeFuncionario ? 'Diário: ' + nomeFuncionario : 'Diário Geral (Todos)';
-            }
-
-            // Inicia o calendário
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'pt-br',
-                height: 700, // Força a altura para garantir que ele não fique invisível
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                buttonText: { today: 'Hoje', month: 'Mês', week: 'Semana' },
-                
-                // Busca no banco de dados
-                events: function(fetchInfo, successCallback, failureCallback) {
-                    const status = filtroStatus ? filtroStatus.value : 'Todos';
-                    let url = `/api/eventos?status=${encodeURIComponent(status)}`;
-                    if (nomeFuncionario) url += `&funcionario=${encodeURIComponent(nomeFuncionario)}`;
-
-                    fetch(url)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Erro na resposta do banco');
-                            return response.json();
-                        })
-                        .then(data => {
-                            successCallback(data || []);
-                        })
-                        .catch(error => {
-                            console.error('Erro ao buscar eventos:', error);
-                            failureCallback(error);
-                        });
-                },
-                
-                // Clicar no evento mostra a observação
-                eventClick: function(info) {
-                    const titulo = info.event.title;
-                    const cargo = info.event.extendedProps.cargo || 'Não informado';
-                    const obs = info.event.extendedProps.observacao || 'Nenhuma observação registrada.';
-                    alert(`📌 EVENTO: ${titulo}\n💼 CARGO: ${cargo}\n\n📝 OBSERVAÇÃO:\n${obs}`);
-                }
-            });
-
-            // Manda desenhar na tela
-            calendar.render();
-
-            // Atualiza os dados quando trocar o filtro
-            if (filtroStatus) {
-                filtroStatus.addEventListener('change', function() {
-                    calendar.refetchEvents();
-                });
-            }
-        });
-    </script>
+    <script src="/static/js/diario.js?v=13"></script>
 </body>
 </html>
