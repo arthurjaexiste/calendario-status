@@ -47,4 +47,5 @@ type Funcionario struct {
 	CPF            string `json:"cpf"`
 	Telefone       string `json:"telefone"`
 	DataNascimento string `json:"data_nascimento"`
+	CodEmpresa     string `json:"cod_empresa"`
 }

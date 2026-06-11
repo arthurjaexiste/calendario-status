@@ -16,11 +16,9 @@ type Handler struct {
 func (h *Handler) verificarAuth(w http.ResponseWriter, r *http.Request) bool {
 	_, err := r.Cookie("auth_perfil")
 	if err != nil {
-		// Se não tem cookie (não logou), joga imediatamente para a tela de /login
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return false
 	}
-	// Tem cookie, deixa passar
 	return true
 }
 
@@ -36,10 +34,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 // ROTA PRINCIPAL (DEPOIS DO LOGIN)
 // =========================================================================
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
-	// Passa pelo guarda. Se não tiver logado, ele te chuta pro /login.
-	if !h.verificarAuth(w, r) { return }
+	// Se não tiver o cookie, o verificarAuth vai disparar o redirect e retornar false
+	if !h.verificarAuth(w, r) {
+		return
+	}
 	
-	// Se passou, exibe a SUA HOME!
+	// Se chegou aqui, está logado. Exibe a HOME.
 	http.ServeFile(w, r, "views/home.html")
 }
 

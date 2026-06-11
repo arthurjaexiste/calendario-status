@@ -12,6 +12,52 @@ import (
 	"calendario/handlers"
 )
 
+func initDB(db *sql.DB) {
+	queries := []string{
+		`CREATE TABLE IF NOT EXISTS usuarios (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			usuario VARCHAR(50) NOT NULL UNIQUE,
+			senha VARCHAR(255) NOT NULL,
+			perfil VARCHAR(50) NOT NULL
+		);`,
+		`CREATE TABLE IF NOT EXISTS funcionarios (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			nome VARCHAR(100) NOT NULL,
+			cargo VARCHAR(50),
+			cpf VARCHAR(20) UNIQUE,
+			telefone VARCHAR(20),
+			data_nascimento DATE,
+			cod_empresa VARCHAR(50)
+		);`,
+		`CREATE TABLE IF NOT EXISTS eventos (
+			id VARCHAR(50) PRIMARY KEY,
+			funcionario_id INT,
+			titulo VARCHAR(100) NOT NULL,
+			data_inicio DATETIME NOT NULL,
+			data_fim DATETIME,
+			cor VARCHAR(20),
+			observacao TEXT,
+			FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+		);`,
+	}
+
+	for _, q := range queries {
+		_, err := db.Exec(q)
+		if err != nil {
+			log.Fatal("Erro ao criar tabela:", err, "\nQuery:", q)
+		}
+	}
+	log.Println("Verificação/Criação de tabelas concluída.")
+
+	// Inserir usuário padrão admin se não existir
+	_, err := db.Exec("INSERT IGNORE INTO usuarios (usuario, senha, perfil) VALUES ('admin', 'admin123', 'admin')")
+	if err != nil {
+		log.Println("Aviso ao inserir usuário padrão:", err)
+	} else {
+		log.Println("Usuário padrão 'admin' verificado/criado.")
+	}
+}
+
 func main() {
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
@@ -32,8 +78,12 @@ func main() {
 	}
 	log.Println("Conectado ao MariaDB com sucesso!")
 
+	// Inicializa o banco de dados (tabelas e usuário admin)
+	initDB(db)
+
 	// Instancia o Handler injetando a conexão do banco nele
 	h := &handlers.Handler{DB: db}
+// ... (rest of the code)
 
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -42,7 +92,8 @@ func main() {
 	// ROTAS DE INTERFACE (VIEWS)
 	// ==========================================
 	http.HandleFunc("/login", h.Login)
-	http.HandleFunc("/", h.Index)
+	http.HandleFunc("/", h.Login)
+	http.HandleFunc("/home", h.Index)
 	http.HandleFunc("/diario", h.Diario)
 	http.HandleFunc("/lancamento", h.Lancamento)
 	http.HandleFunc("/usuarios", h.Usuarios)
