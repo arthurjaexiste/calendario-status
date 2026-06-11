@@ -45,7 +45,7 @@ func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 		Name:     "auth_perfil",
 		Value:    perfil,
 		Path:     "/",
-		HttpOnly: true, // Mais seguro
+		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(8 * time.Hour),
 	})
@@ -56,6 +56,7 @@ func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(map[string]interface{}{"sucesso": true, "redirecionar": redirecionar})
 }
+
 
 
 func (h *Handler) ApiUsuariosLista(w http.ResponseWriter, r *http.Request) {

@@ -29,15 +29,14 @@ func initDB(db *sql.DB) {
 			data_nascimento DATE,
 			cod_empresa VARCHAR(50)
 		);`,
-		`CREATE TABLE IF NOT EXISTS eventos (
+		`CREATE TABLE IF NOT EXISTS eventos_diario (
 			id VARCHAR(50) PRIMARY KEY,
-			funcionario_id INT,
-			titulo VARCHAR(100) NOT NULL,
+			nome_funcionario VARCHAR(100) NOT NULL,
+			cargo VARCHAR(50),
+			status_evento VARCHAR(50),
 			data_inicio DATETIME NOT NULL,
 			data_fim DATETIME,
-			cor VARCHAR(20),
-			observacao TEXT,
-			FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+			observacao TEXT
 		);`,
 	}
 
