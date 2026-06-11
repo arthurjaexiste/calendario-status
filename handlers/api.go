@@ -271,3 +271,75 @@ func (h *Handler) ApiFuncionariosLegada(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(nomes)
 }
+
+func (h *Handler) ApiDashboardStats(w http.ResponseWriter, r *http.Request) {
+	// 1. Total de Funcionários
+	var totalFuncionarios int
+	err := h.DB.QueryRow("SELECT COUNT(*) FROM funcionarios").Scan(&totalFuncionarios)
+	if err != nil {
+		log.Println("Erro ao contar funcionários:", err)
+		http.Error(w, "Erro no banco", 500)
+		return
+	}
+
+	// 2. Contagem e Detalhes de Status para HOJE
+	today := time.Now().Format("2006-01-02")
+	stats := map[string]int{
+		"ROTA":      0,
+		"FOLGA":     0,
+		"FERIAS":    0,
+		"SUSPENSAO": 0,
+	}
+	detalhes := map[string][]map[string]string{
+		"ROTA":      {},
+		"FOLGA":     {},
+		"FERIAS":    {},
+		"SUSPENSAO": {},
+	}
+
+	query := `
+		SELECT status_evento, nome_funcionario, cargo 
+		FROM eventos_diario 
+		WHERE DATE(data_inicio) = ?
+	`
+	rows, err := h.DB.Query(query, today)
+	if err != nil {
+		log.Println("Erro ao buscar stats de status:", err)
+		http.Error(w, "Erro no banco", 500)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var status, nome, cargo string
+		if err := rows.Scan(&status, &nome, &cargo); err == nil {
+			// Normalização para evitar problemas de acentuação e consistência
+			normStatus := status
+			switch status {
+			case "FÉRIAS":
+				normStatus = "FERIAS"
+			case "SUSPENSÃO":
+				normStatus = "SUSPENSAO"
+			}
+
+			if _, ok := stats[normStatus]; ok {
+				stats[normStatus]++
+				detalhes[normStatus] = append(detalhes[normStatus], map[string]string{
+					"nome":  nome,
+					"cargo": cargo,
+				})
+			}
+		}
+	}
+
+	response := map[string]interface{}{
+		"total_funcionarios": totalFuncionarios,
+		"status_hoje":        stats,
+		"detalhes_status":    detalhes,
+		"data_consulta":      today,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+

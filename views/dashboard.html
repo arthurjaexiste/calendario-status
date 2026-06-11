@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Dashboard - Portal RH</title>
+    <link rel="stylesheet" href="/static/css/menu.css?v=6">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <div class="logo"><i class="fa-solid fa-layer-group"></i> Painel de Gestão</div>
+        <div class="profile-icon" onclick="toggleSidebar()" title="Abrir Menu">AD</div>
+    </header>
+
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>Menu Administrativo</h3>
+            <span class="close-btn" onclick="toggleSidebar()">&times;</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/"><i class="fa-solid fa-calendar-days"></i> Consultar Diário</a></li>
+            <li><a href="/dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/lancamento"><i class="fa-solid fa-pen-to-square"></i> Lançar Jornada</a></li>
+            <li><a href="/usuarios"><i class="fa-solid fa-users-gear"></i> Usuários do Sistema</a></li>
+            <li><a href="/funcionarios"><i class="fa-solid fa-id-card-clip"></i> Gestão de Funcionários</a></li>
+            <li><a href="/logout" style="color: #ef4444;"><i class="fa-solid fa-right-from-bracket"></i> Sair do Sistema</a></li>
+        </ul>
+    </div>
+
+    <main class="dashboard-container">
+        <button class="btn-voltar" onclick="window.location.href='/'">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Painel
+        </button>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="label">Total de Funcionários</span>
+                <span id="statTotalFunc" class="value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Ativos em Rota (Hoje)</span>
+                <span id="statRota" class="value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Em Folga (Hoje)</span>
+                <span id="statFolga" class="value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Férias (Hoje)</span>
+                <span id="statFerias" class="value">0</span>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Distribuição de Status (Hoje)</h3>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="lists-grid" id="statusLists">
+            </div>
+    </main>
+
+    <script src="/static/js/menu.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

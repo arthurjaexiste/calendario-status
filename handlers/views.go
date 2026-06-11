@@ -88,3 +88,8 @@ func (h *Handler) FuncionarioNovo(w http.ResponseWriter, r *http.Request) {
 	if !h.verificarAuth(w, r) { return }
 	http.ServeFile(w, r, "views/funcionario_novo.html")
 }
+
+func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
+	if !h.verificarAuth(w, r) { return }
+	http.ServeFile(w, r, "views/dashboard.html")
+}
