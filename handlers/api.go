@@ -3,9 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"calendario/models"
@@ -143,17 +143,41 @@ func (h *Handler) ApiSalvarEvento(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "JSON inválido", 400)
 		return
 	}
-	dataInicio := strings.Replace(l.DataInicio, "T", " ", 1)
-	var dataFim interface{} = nil
-	if l.DataFim != "" {
-		dataFim = strings.Replace(l.DataFim, "T", " ", 1)
+
+	// Converte formato ISO do Flatpickr (2026-06-11T12:00) para MySQL (2026-06-11 12:00:00)
+	formatISO := "2006-01-02T15:04"
+	formatMySQL := "2006-01-02 15:04:05"
+
+	parseDate := func(isoStr string) interface{} {
+		if isoStr == "" {
+			return nil
+		}
+		t, err := time.Parse(formatISO, isoStr)
+		if err != nil {
+			log.Println("Erro ao parsear data:", err, "Valor:", isoStr)
+			return nil
+		}
+		return t.Format(formatMySQL)
 	}
 
-	_, err := h.DB.Exec("INSERT INTO eventos_diario (nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?)",
-		l.NomeFuncionario, l.Cargo, l.StatusEvento, dataInicio, dataFim, l.Observacao)
+	dataInicio := parseDate(l.DataInicio)
+	var dataFim interface{} = nil
+	if l.DataFim != "" {
+		dataFim = parseDate(l.DataFim)
+	}
+
+	// Verificação básica de dados obrigatórios
+	if l.NomeFuncionario == "" || dataInicio == nil {
+		http.Error(w, "Nome do funcionário e data de início são obrigatórios", 400)
+		return
+	}
+
+	id := fmt.Sprintf("%d", time.Now().UnixNano())
+	query := "INSERT INTO eventos_diario (id, nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?, ?)"
+	_, err := h.DB.Exec(query, id, l.NomeFuncionario, l.Cargo, l.StatusEvento, dataInicio, dataFim, l.Observacao)
 	if err != nil {
-		log.Println("Erro SQL:", err)
-		http.Error(w, "Erro", 500)
+		log.Println("Erro SQL ao salvar evento:", err)
+		http.Error(w, "Erro ao salvar no banco de dados", 500)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

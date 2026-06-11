@@ -98,6 +98,8 @@ func main() {
 
 	http.HandleFunc("/usuarios", h.Usuarios)
 	http.HandleFunc("/usuario/novo", h.UsuarioNovo)
+	http.HandleFunc("/logout", h.Logout)
+
 	http.HandleFunc("/funcionarios", h.Funcionarios)
 	http.HandleFunc("/funcionario/novo", h.FuncionarioNovo)
 

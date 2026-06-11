@@ -48,6 +48,17 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 // =========================================================================
 // ROTAS SECUNDÁRIAS PROTEGIDAS
 // =========================================================================
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_perfil",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
 func (h *Handler) Diario(w http.ResponseWriter, r *http.Request) {
 	if !h.verificarAuth(w, r) { return }
 	http.ServeFile(w, r, "views/diario.html")
