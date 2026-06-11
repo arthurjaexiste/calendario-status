@@ -33,49 +33,7 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('formLogin');
-            const msg = document.getElementById('mensagem');
-            if (!form) return;
-
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                msg.style.color = '#2563eb';
-                msg.textContent = 'Autenticando...';
-
-                const dados = {
-                    Usuario: document.getElementById('usuario').value.trim(),
-                    Senha: document.getElementById('senha').value.trim()
-                };
-
-                fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                })
-                    .then(async res => {
-                        const texto = await res.text();
-                        if (!res.ok) throw new Error("Erro: " + res.status);
-                        return JSON.parse(texto);
-                    })
-                    .then(data => {
-                        if (data.sucesso) {
-                            msg.style.color = '#1e8e3e';
-                            msg.textContent = 'Login efetuado! Redirecionando...';
-                            setTimeout(() => { window.location.href = data.redirecionar || '/'; }, 500);
-                        } else {
-                            msg.style.color = '#ef4444';
-                            msg.textContent = '⚠️ Usuário ou senha incorretos.';
-                        }
-                    })
-                    .catch(err => {
-                        msg.style.color = '#ef4444';
-                        msg.textContent = '⚠️ Erro de conexão com o servidor.';
-                    });
-            });
-        });
-    </script>
+    <script src="/static/js/login.js"></script>
 </body>
 
 </html>

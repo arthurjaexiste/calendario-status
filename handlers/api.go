@@ -21,24 +21,42 @@ func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var creds models.Credenciais
-	json.NewDecoder(r.Body).Decode(&creds)
-
-	var perfil string
-	err := h.DB.QueryRow("SELECT perfil FROM usuarios WHERE usuario = ? AND senha = ?", creds.Usuario, creds.Senha).Scan(&perfil)
-	w.Header().Set("Content-Type", "application/json")
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"sucesso": false})
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		log.Println("Erro ao decodificar JSON de login:", err)
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{Name: "auth_perfil", Value: perfil, Path: "/", HttpOnly: false, Expires: time.Now().Add(8 * time.Hour)})
+	log.Printf("Tentativa de login: usuario=%s, senha=%s", creds.Usuario, creds.Senha)
 
-	redirecionar := "/"
+	var perfil string
+	err := h.DB.QueryRow("SELECT perfil FROM usuarios WHERE usuario = ? AND senha = ?", creds.Usuario, creds.Senha).Scan(&perfil)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		log.Printf("Falha no login para usuario %s: %v", creds.Usuario, err)
+		json.NewEncoder(w).Encode(map[string]interface{}{"sucesso": false, "mensagem": "Usuário ou senha incorretos"})
+		return
+	}
+
+	log.Printf("Login bem-sucedido para usuario %s, perfil: %s", creds.Usuario, perfil)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_perfil",
+		Value:    perfil,
+		Path:     "/",
+		HttpOnly: true, // Mais seguro
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(8 * time.Hour),
+	})
+
+	redirecionar := "/home"
 	if perfil == "LOGISTICA" {
 		redirecionar = "/lancamento"
 	}
 	json.NewEncoder(w).Encode(map[string]interface{}{"sucesso": true, "redirecionar": redirecionar})
 }
+
 
 func (h *Handler) ApiUsuariosLista(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.DB.Query("SELECT id, usuario, perfil FROM usuarios ORDER BY usuario")

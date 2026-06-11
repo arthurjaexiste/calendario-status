@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
             senha: senhaInput ? senhaInput.value.trim() : ''
         };
 
+        console.log('Enviando dados de login:', dados);
+
         fetch('/api/login', {
             method: 'POST',
             headers: {
@@ -29,6 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(async response => {
             const texto = await response.text();
+            console.log('Resposta bruta do servidor:', texto);
+
             if (!response.ok) {
                 throw new Error(texto || 'Erro desconhecido no servidor');
             }
@@ -39,17 +43,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .then(data => {
+            console.log('JSON decodificado:', data);
+
             if (data.sucesso) {
                 if (msg) {
                     msg.style.color = '#1e8e3e';
                     msg.textContent = 'Login efetuado! Redirecionando...';
                 }
-                // Redireciona para a rota enviada pelo Go (ex: / ou /lancamento)
-                window.location.href = data.redirecionar || '/';
+                const destino = data.redirecionar || '/home';
+                console.log('Redirecionando para:', destino);
+                window.location.href = destino;
             } else {
                 if (msg) {
                     msg.style.color = '#ef4444';
-                    msg.textContent = '⚠️ Usuário ou senha incorretos.';
+                    msg.textContent = '⚠️ ' + (data.mensagem || 'Usuário ou senha incorretos.');
                 }
             }
         })
@@ -57,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Erro no login:', error);
             if (msg) {
                 msg.style.color = '#ef4444';
-                msg.textContent = '⚠️ Falha de conexão: ' + error.message;
+                msg.textContent = '⚠️ ' + error.message;
             }
         });
     });
