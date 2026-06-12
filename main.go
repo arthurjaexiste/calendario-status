@@ -82,6 +82,7 @@ func main() {
 
 	// Instancia o Handler injetando a conexão do banco nele
 	h := &handlers.Handler{DB: db}
+// ... (rest of the code)
 
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -94,10 +95,11 @@ func main() {
 	http.HandleFunc("/home", h.Index)
 	http.HandleFunc("/diario", h.Diario)
 	http.HandleFunc("/lancamento", h.Lancamento)
+
 	http.HandleFunc("/usuarios", h.Usuarios)
 	http.HandleFunc("/usuario/novo", h.UsuarioNovo)
 	http.HandleFunc("/logout", h.Logout)
-	http.HandleFunc("/dashboard", h.Dashboard)
+
 	http.HandleFunc("/funcionarios", h.Funcionarios)
 	http.HandleFunc("/funcionario/novo", h.FuncionarioNovo)
 
@@ -117,9 +119,6 @@ func main() {
 	// APIs do Diário/Calendário
 	http.HandleFunc("/api/eventos", h.ApiEventos)
 	http.HandleFunc("/api/salvar", h.ApiSalvarEvento)
-
-	// 👇 A ROTA QUE FALTAVA PARA O DASHBOARD PUXAR OS NÚMEROS DO BANCO 👇
-	http.HandleFunc("/api/dashboard/stats", h.ApiDashboardStats)
 
 	log.Println("Servidor Web rodando na porta 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))

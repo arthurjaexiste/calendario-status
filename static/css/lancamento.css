@@ -34,17 +34,7 @@ body {
     margin-bottom: 20px;
 }
 
-.form-row {
-    display: flex;
-    gap: 15px;
-}
-
-.form-row .form-group {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-label {
+.form-group label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
@@ -117,11 +107,4 @@ button[type="button"]:hover {
     margin-top: 15px;
     font-weight: 600;
     font-size: 14px;
-}
-
-@media (max-width: 480px) {
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
 }
