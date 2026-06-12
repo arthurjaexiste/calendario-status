@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const labelPonto = document.getElementById('label-ponto');
     const form = document.getElementById('formLancamento');
 
-    // 2. BUSCA A LISTA DE FUNCIONÁRIOS NA API (AGORA VAI FUNCIONAR)
+    // 2. BUSCA A LISTA DE FUNCIONÁRIOS NA API
     if (selectFuncionario) {
         fetch('/api/funcionarios/lista')
             .then(res => {
@@ -40,7 +40,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     selectFuncionario.innerHTML = '<option value="" disabled selected>Nenhum funcionário encontrado</option>';
                 }
             })
-            .catch(err => console.error("Erro ao carregar funcionários:", err));
+            .catch(err => {
+                console.error("Erro ao carregar funcionários:", err);
+                selectFuncionario.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+            });
 
         // Preenche o cargo automaticamente ao selecionar o nome
         selectFuncionario.addEventListener('change', (e) => {
@@ -114,31 +117,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             })
-                .then(res => {
-                    if (res.ok) {
-                        msg.textContent = '✅ Lançamento registrado com sucesso!';
-                        msg.style.color = '#1e8e3e';
-                        form.reset();
+            .then(res => {
+                if (res.ok) {
+                    msg.textContent = '✅ Lançamento registrado com sucesso!';
+                    msg.style.color = '#1e8e3e';
+                    form.reset();
+                    
+                    // Voltar a tela ao formato original
+                    sectionRange.style.display = 'block';
+                    sectionPoint.style.display = 'none';
 
-                        // Voltar a tela ao formato original
-                        sectionRange.style.display = 'block';
-                        sectionPoint.style.display = 'none';
-
-                        // Limpa os calendários visualmente
-                        document.querySelectorAll('.data-hora-brasil').forEach(el => {
-                            if (el._flatpickr) el._flatpickr.clear();
-                        });
-
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        return res.text().then(text => { throw new Error(text) });
-                    }
-                })
-                .catch(err => {
-                    console.error('Erro ao salvar:', err);
-                    msg.textContent = '❌ ' + err.message;
-                    msg.style.color = '#ef4444';
-                });
+                    // Limpa os calendários visualmente
+                    document.querySelectorAll('.data-hora-brasil').forEach(el => {
+                        if (el._flatpickr) el._flatpickr.clear();
+                    });
+                    
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    return res.text().then(text => { throw new Error(text) });
+                }
+            })
+            .catch(err => {
+                console.error('Erro ao salvar:', err);
+                msg.textContent = '❌ ' + err.message;
+                msg.style.color = '#ef4444';
+            });
         });
     }
 });
