@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Novo Veículo - Portal RH</title>
+    <link rel="stylesheet" href="/static/css/lancamento.css">
+</head>
+
+<body>
+    <div class="form-container">
+        <h2><i class="fa-solid fa-car-side"></i> Cadastrar Novo Veículo</h2>
+        <form id="formVeiculo">
+            <div class="form-group">
+                <label>Placa do Veículo *</label>
+                <input type="text" id="placa" placeholder="ABC-1234" required>
+            </div>
+            <div class="form-group">
+                <label>Modelo / Marca *</label>
+                <input type="text" id="modelo" placeholder="Ex: VW Gol, Mercedes-Benz Accelo" required>
+            </div>
+            <div class="form-group">
+                <label>Cor</label>
+                <input type="text" id="cor" placeholder="Ex: Branco, Prata">
+            </div>
+            <div class="form-group">
+                <label>Ano</label>
+                <input type="number" id="ano" placeholder="Ex: 2022">
+            </div>
+            <button type="submit">Salvar Veículo</button>
+            <button type="button" onclick="window.location.href='/veiculos'"
+                style="background:#5f6368; margin-top:10px;">Cancelar</button>
+            <div id="msgStatus" class="mensagem"></div>
+        </form>
+    </div>
+    <script src="/static/js/veiculo_novo.js?v=1"></script>
+</body>
+
+</html>

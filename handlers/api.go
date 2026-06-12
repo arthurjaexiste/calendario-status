@@ -385,3 +385,52 @@ func (h *Handler) ApiDashboardStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+// =========================================================================
+// 4. APIs DE GESTÃO DE VEÍCULOS
+// =========================================================================
+
+func (h *Handler) ApiVeiculosLista(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.DB.Query("SELECT id, placa, modelo, cor, ano FROM veiculos ORDER BY placa")
+	if err != nil {
+		log.Println("Erro ao listar veículos:", err)
+		http.Error(w, "Erro no banco", 500)
+		return
+	}
+	defer rows.Close()
+
+	var lista []models.Veiculo
+	for rows.Next() {
+		var v models.Veiculo
+		if err := rows.Scan(&v.ID, &v.Placa, &v.Modelo, &v.Cor, &v.Ano); err != nil {
+			log.Println("Erro ao ler veículo:", err)
+			continue
+		}
+		lista = append(lista, v)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(lista)
+}
+
+func (h *Handler) ApiCriarVeiculo(w http.ResponseWriter, r *http.Request) {
+	var nv models.NovoVeiculo
+	if err := json.NewDecoder(r.Body).Decode(&nv); err != nil {
+		http.Error(w, "JSON inválido", 400)
+		return
+	}
+
+	if nv.Placa == "" || nv.Modelo == "" {
+		http.Error(w, "Placa e Modelo são obrigatórios", 400)
+		return
+	}
+
+	query := "INSERT INTO veiculos (placa, modelo, cor, ano) VALUES (?, ?, ?, ?)"
+	_, err := h.DB.Exec(query, nv.Placa, nv.Modelo, nv.Cor, nv.Ano)
+	if err != nil {
+		log.Println("Erro ao salvar veículo no banco:", err)
+		http.Error(w, "Erro interno (Possivelmente placa duplicada)", 500)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}

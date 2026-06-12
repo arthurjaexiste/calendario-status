@@ -88,3 +88,13 @@ func (h *Handler) FuncionarioNovo(w http.ResponseWriter, r *http.Request) {
 	if !h.verificarAuth(w, r) { return }
 	http.ServeFile(w, r, "views/funcionario_novo.html")
 }
+
+func (h *Handler) Veiculos(w http.ResponseWriter, r *http.Request) {
+	if !h.verificarAuth(w, r) { return }
+	http.ServeFile(w, r, "views/veiculos.html")
+}
+
+func (h *Handler) VeiculoNovo(w http.ResponseWriter, r *http.Request) {
+	if !h.verificarAuth(w, r) { return }
+	http.ServeFile(w, r, "views/veiculo_novo.html")
+}

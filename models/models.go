@@ -49,3 +49,18 @@ type Funcionario struct {
 	DataNascimento string `json:"data_nascimento"`
 	CodEmpresa     string `json:"cod_empresa"`
 }
+
+type Veiculo struct {
+	ID     int    `json:"id"`
+	Placa  string `json:"placa"`
+	Modelo string `json:"modelo"`
+	Cor    string `json:"cor"`
+	Ano    int    `json:"ano"`
+}
+
+type NovoVeiculo struct {
+	Placa  string `json:"placa"`
+	Modelo string `json:"modelo"`
+	Cor    string `json:"cor"`
+	Ano    int    `json:"ano"`
+}

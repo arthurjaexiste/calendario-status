@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Gestão de Veículos - Portal RH</title>
+    <link rel="stylesheet" href="/static/css/tabelas.css?v=10">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="card-tabela">
+        <div class="card-header">
+            <h2><i class="fa-solid fa-truck"></i> Gestão de Veículos</h2>
+            <button class="btn-primary" onclick="window.location.href='/veiculo/novo'" title="Cadastrar Veículo">
+                <i class="fa-solid fa-truck"></i> Novo Veículo
+            </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="tabela-moderna">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Placa</th>
+                        <th>Modelo</th>
+                        <th>Cor</th>
+                        <th>Ano</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela">
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:20px; color: #6b7280;">Buscando veículos...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button onclick="window.location.href='/'" class="btn-voltar">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Painel
+        </button>
+    </div>
+
+    <script src="/static/js/veiculos.js?v=1"></script>
+</body>
+
+</html>

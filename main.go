@@ -38,6 +38,13 @@ func initDB(db *sql.DB) {
 			data_fim DATETIME,
 			observacao TEXT
 		);`,
+		`CREATE TABLE IF NOT EXISTS veiculos (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			placa VARCHAR(10) NOT NULL UNIQUE,
+			modelo VARCHAR(100) NOT NULL,
+			cor VARCHAR(50),
+			ano INT
+		);`,
 	}
 
 	for _, q := range queries {
@@ -102,6 +109,8 @@ func main() {
 
 	http.HandleFunc("/funcionarios", h.Funcionarios)
 	http.HandleFunc("/funcionario/novo", h.FuncionarioNovo)
+	http.HandleFunc("/veiculos", h.Veiculos)
+	http.HandleFunc("/veiculo/novo", h.VeiculoNovo)
 
 	// ==========================================
 	// ROTAS DA API (JSON)
@@ -115,6 +124,10 @@ func main() {
 	http.HandleFunc("/api/funcionarios/salvar", h.ApiFuncionariosSalvar)
 	http.HandleFunc("/api/funcionarios/editar", h.ApiFuncionariosEditar)
 	http.HandleFunc("/api/funcionarios", h.ApiFuncionariosLegada)
+	
+	// APIs de Veículos
+	http.HandleFunc("/api/veiculos/lista", h.ApiVeiculosLista)
+	http.HandleFunc("/api/veiculos/criar", h.ApiCriarVeiculo)
 	
 	// APIs do Diário/Calendário
 	http.HandleFunc("/api/eventos", h.ApiEventos)
