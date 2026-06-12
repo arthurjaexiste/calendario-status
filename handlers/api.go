@@ -94,7 +94,7 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 	filtroFuncionario := r.URL.Query().Get("funcionario")
 	filtroStatus := r.URL.Query().Get("status")
 	
-	// A MÁGICA DO FUSO HORÁRIO ESTÁ AQUI: DATE_FORMAT com o 'T' isola o formato para a tela não aplicar o -3h do Brasil.
+	// DATE_FORMAT garante que o formato ISO original seja enviado, evitando que o navegador subtraia fuso horário
 	query := `SELECT id, nome_funcionario, cargo, status_evento, 
 	          DATE_FORMAT(data_inicio, '%Y-%m-%dT%H:%i:%s'), 
 	          DATE_FORMAT(data_fim, '%Y-%m-%dT%H:%i:%s'), 
@@ -120,12 +120,15 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 		var id, nome, cargo, status string
 		var dataInicio, dataFim, observacao sql.NullString
 		rows.Scan(&id, &nome, &cargo, &status, &dataInicio, &dataFim, &observacao)
+		
 		cor := "#3788d8"
 		switch status {
 		case "ENTRADA":
 			cor = "#2ecc71"
 		case "SAÍDA":
 			cor = "#e74c3c"
+		case "ALMOÇO":
+			cor = "#8e44ad" // Roxo para destacar visualmente o período de almoço
 		case "ROTA":
 			cor = "#1e8e3e"
 		case "FOLGA":
@@ -135,12 +138,12 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 		case "SUSPENSÃO":
 			cor = "#d93025"
 		}
+		
 		textoObs := "Sem observações."
 		if observacao.Valid && observacao.String != "" {
 			textoObs = observacao.String
 		}
 		
-		// Injeta os dados limpos no evento
 		evento := models.Evento{ID: id, Title: nome + " - " + status, Color: cor, ExtendedProps: models.ExtendedProps{Observacao: textoObs, Cargo: cargo}}
 		if dataInicio.Valid {
 			evento.Start = dataInicio.String
@@ -187,35 +190,37 @@ func (h *Handler) ApiSalvarEvento(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// --- VALIDAÇÃO DE CONFLITO UNIVERSAL E BLINDADA ---
-	var checkFim interface{} = dataFim
-	if checkFim == nil {
-		// Se não tiver data fim (ex: Entrada/Saída), o sistema assume que o evento dura 1 minuto
-		// para garantir que não vai encavalar no exato mesmo horário.
-		if t, ok := dataInicio.(string); ok {
-			parsed, _ := time.Parse(formatMySQL, t)
-			checkFim = parsed.Add(time.Minute).Format(formatMySQL)
+	// --- VALIDAÇÃO DE CONFLITO ADAPTADA ---
+	statusComBypass := (l.StatusEvento == "ENTRADA" || l.StatusEvento == "SAÍDA" || l.StatusEvento == "ALMOÇO")
+	
+	if !statusComBypass {
+		var checkFim interface{} = dataFim
+		if checkFim == nil {
+			if t, ok := dataInicio.(string); ok {
+				parsed, _ := time.Parse(formatMySQL, t)
+				checkFim = parsed.Add(time.Minute).Format(formatMySQL)
+			}
+		}
+
+		var conflitoID string
+		queryConflito := `SELECT id FROM eventos_diario 
+						  WHERE nome_funcionario = ? 
+						  AND (
+							  data_inicio < ? AND COALESCE(data_fim, DATE_ADD(data_inicio, INTERVAL 1 MINUTE)) > ?
+						  ) LIMIT 1`
+
+		err := h.DB.QueryRow(queryConflito, l.NomeFuncionario, checkFim, dataInicio).Scan(&conflitoID)
+		if err == nil {
+			http.Error(w, fmt.Sprintf("Conflito: O funcionário %s já tem um evento agendado cruzando com este horário.", l.NomeFuncionario), http.StatusConflict)
+			return
 		}
 	}
 
-	var conflitoID string
-	// A query varre o banco para ver se algum horário de início ou fim cruza com a tentativa atual.
-	queryConflito := `SELECT id FROM eventos_diario 
-					  WHERE nome_funcionario = ? 
-					  AND (
-						  data_inicio < ? AND COALESCE(data_fim, DATE_ADD(data_inicio, INTERVAL 1 MINUTE)) > ?
-					  ) LIMIT 1`
-
-	err := h.DB.QueryRow(queryConflito, l.NomeFuncionario, checkFim, dataInicio).Scan(&conflitoID)
-	if err == nil {
-		http.Error(w, fmt.Sprintf("Conflito: O funcionário %s já tem registro cruzando com este horário.", l.NomeFuncionario), http.StatusConflict)
-		return
-	}
-	// ---------------------------------------
-
 	id := fmt.Sprintf("%d", time.Now().UnixNano())
 	query := "INSERT INTO eventos_diario (id, nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	_, err = h.DB.Exec(query, id, l.NomeFuncionario, l.Cargo, l.StatusEvento, dataInicio, dataFim, l.Observacao)
+	
+	// AQUI ESTAVA O ERRO DE SINTAXE QUE TE TRAVOU! Adicionado os dois pontos (:=)
+	_, err := h.DB.Exec(query, id, l.NomeFuncionario, l.Cargo, l.StatusEvento, dataInicio, dataFim, l.Observacao)
 	if err != nil {
 		log.Println("Erro SQL ao salvar evento:", err)
 		http.Error(w, "Erro ao salvar no banco de dados", 500)

@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // 1. INICIA O CALENDÁRIO
     const flatpickrConfig = {
         enableTime: true,
         time_24hr: true,
@@ -16,10 +15,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectStatus = document.getElementById('status_evento');
     const sectionRange = document.getElementById('section-range');
     const sectionPoint = document.getElementById('section-point');
+
+    // Labels dinâmicos
     const labelPonto = document.getElementById('label-ponto');
+    const labelInicio = document.getElementById('label-inicio');
+    const labelFim = document.getElementById('label-fim');
+
     const form = document.getElementById('formLancamento');
 
-    // 2. BUSCA A LISTA DE FUNCIONÁRIOS NA API
+    const statusDePontoUnico = ['ENTRADA', 'SAÍDA'];
+
     if (selectFuncionario) {
         fetch('/api/funcionarios/lista')
             .then(res => {
@@ -33,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const opt = document.createElement('option');
                         opt.value = f.nome;
                         opt.textContent = f.nome;
-                        opt.dataset.cargo = f.cargo || ""; // Proteção caso cargo venha nulo
+                        opt.dataset.cargo = f.cargo || "";
                         selectFuncionario.appendChild(opt);
                     });
                 } else {
@@ -45,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectFuncionario.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
             });
 
-        // Preenche o cargo automaticamente ao selecionar o nome
         selectFuncionario.addEventListener('change', (e) => {
             const cargo = e.target.options[e.target.selectedIndex].dataset.cargo || "";
             const selectCargo = document.getElementById('cargo');
@@ -60,22 +64,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 3. LÓGICA DE TROCA DE CAMPOS (ENTRADA/SAÍDA vs OUTROS)
     if (selectStatus) {
         selectStatus.addEventListener('change', (e) => {
             const status = e.target.value;
-            if (status === 'ENTRADA' || status === 'SAÍDA') {
+
+            if (statusDePontoUnico.includes(status)) {
+                // Modo: Ponto Único (Entrada / Saída)
                 sectionRange.style.display = 'none';
                 sectionPoint.style.display = 'block';
                 labelPonto.textContent = status === 'ENTRADA' ? 'Horário de Entrada *' : 'Horário de Saída *';
             } else {
+                // Modo: Período de Tempo (Rota, Almoço, Folga, etc)
                 sectionRange.style.display = 'block';
                 sectionPoint.style.display = 'none';
+
+                if (status === 'ALMOÇO') {
+                    labelInicio.textContent = 'Início do Almoço *';
+                    labelFim.textContent = 'Fim do Almoço *';
+                } else {
+                    labelInicio.textContent = 'Data e Hora de Início *';
+                    labelFim.textContent = 'Data e Hora de Fim (Opcional)';
+                }
             }
         });
     }
 
-    // 4. SALVAR NO BANCO
     if (form) {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -87,8 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const status = selectStatus.value;
             let dataInicio, dataFim;
 
-            // Se for Entrada ou Saída, pega do campo único. Senão, pega dos campos duplos.
-            if (status === 'ENTRADA' || status === 'SAÍDA') {
+            if (statusDePontoUnico.includes(status)) {
                 dataInicio = document.getElementById('data_ponto').value;
                 dataFim = '';
             } else {
@@ -105,9 +117,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 observacao: document.getElementById('observacao').value
             };
 
-            // Validação de segurança
+            // Validações
             if (!dados.nome_funcionario || !dados.data_inicio) {
                 msg.textContent = '❌ Funcionário e Data/Horário são obrigatórios!';
+                msg.style.color = '#ef4444';
+                return;
+            }
+            if (status === 'ALMOÇO' && !dados.data_fim) {
+                msg.textContent = '❌ Para o Almoço, é obrigatório informar o horário de fim!';
                 msg.style.color = '#ef4444';
                 return;
             }
@@ -117,31 +134,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             })
-            .then(res => {
-                if (res.ok) {
-                    msg.textContent = '✅ Lançamento registrado com sucesso!';
-                    msg.style.color = '#1e8e3e';
-                    form.reset();
-                    
-                    // Voltar a tela ao formato original
-                    sectionRange.style.display = 'block';
-                    sectionPoint.style.display = 'none';
+                .then(res => {
+                    if (res.ok) {
+                        msg.textContent = '✅ Lançamento registrado com sucesso!';
+                        msg.style.color = '#1e8e3e';
+                        form.reset();
 
-                    // Limpa os calendários visualmente
-                    document.querySelectorAll('.data-hora-brasil').forEach(el => {
-                        if (el._flatpickr) el._flatpickr.clear();
-                    });
-                    
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    return res.text().then(text => { throw new Error(text) });
-                }
-            })
-            .catch(err => {
-                console.error('Erro ao salvar:', err);
-                msg.textContent = '❌ ' + err.message;
-                msg.style.color = '#ef4444';
-            });
+                        sectionRange.style.display = 'block';
+                        sectionPoint.style.display = 'none';
+                        labelInicio.textContent = 'Data e Hora de Início *';
+                        labelFim.textContent = 'Data e Hora de Fim (Opcional)';
+
+                        document.querySelectorAll('.data-hora-brasil').forEach(el => {
+                            if (el._flatpickr) el._flatpickr.clear();
+                        });
+
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        return res.text().then(text => { throw new Error(text) });
+                    }
+                })
+                .catch(err => {
+                    console.error('Erro ao salvar:', err);
+                    msg.textContent = '❌ ' + err.message;
+                    msg.style.color = '#ef4444';
+                });
         });
     }
 });

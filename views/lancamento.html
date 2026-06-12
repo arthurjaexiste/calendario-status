@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <title>Lançamento de Jornada - Portal RH</title>
 
-    <link rel="stylesheet" href="/static/css/lancamento.css?v=20">
+    <link rel="stylesheet" href="/static/css/lancamento.css?v=23">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -38,6 +38,7 @@
                 <select id="status_evento" required>
                     <option value="" disabled selected>Selecione o status...</option>
                     <option value="ENTRADA">Horário de Entrada</option>
+                    <option value="ALMOÇO">Horário de Almoço</option>
                     <option value="SAÍDA">Horário de Saída</option>
                     <option value="ROTA">Em Rota</option>
                     <option value="FOLGA">Folga</option>
@@ -48,13 +49,13 @@
 
             <div id="section-range">
                 <div class="form-group">
-                    <label>Data e Hora de Início *</label>
+                    <label id="label-inicio">Data e Hora de Início *</label>
                     <input type="text" id="data_inicio" class="data-hora-brasil"
                         placeholder="Selecione a data e hora..." autocomplete="off">
                 </div>
 
                 <div class="form-group">
-                    <label>Data e Hora de Fim (Opcional)</label>
+                    <label id="label-fim">Data e Hora de Fim (Opcional)</label>
                     <input type="text" id="data_fim" class="data-hora-brasil"
                         placeholder="Selecione a data e hora (Opcional)..." autocomplete="off">
                 </div>
@@ -62,7 +63,7 @@
 
             <div id="section-point" style="display: none;">
                 <div class="form-group">
-                    <label id="label-ponto">Horário *</label>
+                    <label id="label-ponto">Horário do Registro *</label>
                     <input type="text" id="data_ponto" class="data-hora-brasil" placeholder="Selecione a data e hora..."
                         autocomplete="off">
                 </div>
@@ -85,7 +86,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 
-    <script src="/static/js/lancamento.js?v=20"></script>
+    <script src="/static/js/lancamento.js?v=23"></script>
 </body>
 
 </html>
