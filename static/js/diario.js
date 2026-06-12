@@ -45,21 +45,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     // BLINDAGEM ANTI-DUPLICAÇÃO:
-                    // Varre o que veio do banco e ignora se já existir um evento com o mesmo nome no mesmo horário.
                     const eventosUnicos = [];
                     const chavesVistas = new Set();
                     
                     (data || []).forEach(evento => {
-                        // Cria uma chave de identificação única (Nome + Início + Fim)
                         const chave = evento.title + "|" + evento.start + "|" + evento.end;
-                        
                         if (!chavesVistas.has(chave)) {
                             chavesVistas.add(chave);
                             eventosUnicos.push(evento);
                         }
                     });
 
-                    // Entrega apenas os eventos filtrados para o calendário desenhar
+                    // --- ATUALIZA OS CARDS DE HORAS ---
+                    atualizarEstatisticas(eventosUnicos);
+
                     successCallback(eventosUnicos);
                 })
                 .catch(error => {
@@ -85,9 +84,51 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ==========================================
+// LÓGICA DE CÁLCULO DE HORAS
+// ==========================================
+function atualizarEstatisticas(eventos) {
+    const totais = {
+        'ROTA': 0,
+        'FOLGA': 0,
+        'FÉRIAS': 0,
+        'SUSPENSÃO': 0
+    };
+
+    eventos.forEach(ev => {
+        // O título no backend vem como "Nome - STATUS"
+        const partes = ev.title.split(' - ');
+        const status = partes[partes.length - 1]?.toUpperCase();
+        
+        if (totais.hasOwnProperty(status)) {
+            const inicio = new Date(ev.start);
+            const fim = ev.end ? new Date(ev.end) : new Date(inicio.getTime() + (60 * 60 * 1000)); // Default 1h se não tiver fim
+            
+            const diffMs = fim - inicio;
+            if (diffMs > 0) {
+                totais[status] += diffMs;
+            }
+        }
+    });
+
+    // Converte milissegundos para formato "Xh Ym"
+    const formatarHoras = (ms) => {
+        const totalMinutos = Math.floor(ms / (1000 * 60));
+        const horas = Math.floor(totalMinutos / 60);
+        const minutos = totalMinutos % 60;
+        return `${horas}h ${minutos}m`;
+    };
+
+    document.getElementById('statRota').textContent = formatarHoras(totais['ROTA']);
+    document.getElementById('statFolga').textContent = formatarHoras(totais['FOLGA']);
+    document.getElementById('statFerias').textContent = formatarHoras(totais['FÉRIAS']);
+    document.getElementById('statSuspensao').textContent = formatarHoras(totais['SUSPENSÃO']);
+}
+
+// ==========================================
 // FUNÇÕES DE CONTROLE DO MODAL DE DETALHES
 // ==========================================
 function showEventModal(event) {
+
     document.getElementById('modalTitle').textContent = event.title;
     
     document.getElementById('modalFuncionario').textContent = event.extendedProps.nome_funcionario || event.title.split(' - ')[0];

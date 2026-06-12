@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="utf-8" />
     <title>Lançamento de Jornada - Portal RH</title>
-    
-    <link rel="stylesheet" href="/static/css/lancamento.css?v=16">
+
+    <link rel="stylesheet" href="/static/css/lancamento.css?v=20">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
 </head>
+
 <body>
     <div class="form-container">
         <h2><i class="fa-solid fa-pen-to-square"></i> Lançamento de Jornada</h2>
-        
+
         <form id="formLancamento">
             <div class="form-group">
                 <label>Nome do Funcionário *</label>
@@ -24,7 +26,7 @@
 
             <div class="form-group">
                 <label>Cargo *</label>
-                <select id="cargo" required>
+                <select id="cargo" disabled required>
                     <option value="" disabled selected>Selecione o cargo...</option>
                     <option value="Motorista">Motorista</option>
                     <option value="Ajudante">Ajudante</option>
@@ -35,6 +37,8 @@
                 <label>Status do Evento *</label>
                 <select id="status_evento" required>
                     <option value="" disabled selected>Selecione o status...</option>
+                    <option value="ENTRADA">Horário de Entrada</option>
+                    <option value="SAÍDA">Horário de Saída</option>
                     <option value="ROTA">Em Rota</option>
                     <option value="FOLGA">Folga</option>
                     <option value="FÉRIAS">Férias</option>
@@ -42,24 +46,38 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label>Data e Hora de Início *</label>
-                <input type="text" id="data_inicio" class="data-hora-brasil" placeholder="Selecione a data e hora..." required autocomplete="off">
+            <div id="section-range">
+                <div class="form-group">
+                    <label>Data e Hora de Início *</label>
+                    <input type="text" id="data_inicio" class="data-hora-brasil"
+                        placeholder="Selecione a data e hora..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Data e Hora de Fim (Opcional)</label>
+                    <input type="text" id="data_fim" class="data-hora-brasil"
+                        placeholder="Selecione a data e hora (Opcional)..." autocomplete="off">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Data e Hora de Fim (Opcional)</label>
-                <input type="text" id="data_fim" class="data-hora-brasil" placeholder="Selecione a data e hora (Opcional)..." autocomplete="off">
+            <div id="section-point" style="display: none;">
+                <div class="form-group">
+                    <label id="label-ponto">Horário *</label>
+                    <input type="text" id="data_ponto" class="data-hora-brasil" placeholder="Selecione a data e hora..."
+                        autocomplete="off">
+                </div>
             </div>
 
             <div class="form-group">
                 <label>Observações de Campo</label>
-                <textarea id="observacao" rows="3" placeholder="Detalhes da rota, motivo da suspensão, etc." style="resize: vertical;"></textarea>
+                <textarea id="observacao" rows="3" placeholder="Detalhes da rota, motivo da suspensão, etc."
+                    style="resize: vertical;"></textarea>
             </div>
 
             <button type="submit"><i class="fa-solid fa-save"></i> Salvar Registro</button>
-            <button type="button" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> Voltar ao Painel</button>
-            
+            <button type="button" onclick="window.location.href='/'"><i class="fa-solid fa-arrow-left"></i> Voltar ao
+                Painel</button>
+
             <div id="msgStatus" class="mensagem"></div>
         </form>
     </div>
@@ -67,6 +85,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 
-    <script src="/static/js/lancamento.js?v=16"></script>
+    <script src="/static/js/lancamento.js?v=20"></script>
 </body>
+
 </html>

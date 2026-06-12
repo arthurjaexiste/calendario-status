@@ -45,7 +45,7 @@ func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 		Name:     "auth_perfil",
 		Value:    perfil,
 		Path:     "/",
-		HttpOnly: false, 
+		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(8 * time.Hour),
 	})
@@ -56,8 +56,6 @@ func (h *Handler) ApiLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(map[string]interface{}{"sucesso": true, "redirecionar": redirecionar})
 }
-
-
 
 func (h *Handler) ApiUsuariosLista(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.DB.Query("SELECT id, usuario, perfil FROM usuarios ORDER BY usuario")
@@ -118,10 +116,18 @@ func (h *Handler) ApiEventos(w http.ResponseWriter, r *http.Request) {
 		rows.Scan(&id, &nome, &cargo, &status, &dataInicio, &dataFim, &observacao)
 		cor := "#3788d8"
 		switch status {
-		case "ROTA": cor = "#1e8e3e"
-		case "FOLGA": cor = "#1967d2"
-		case "FÉRIAS": cor = "#f29900"
-		case "SUSPENSÃO": cor = "#d93025"
+		case "ENTRADA":
+			cor = "#2ecc71"
+		case "SAÍDA":
+			cor = "#e74c3c"
+		case "ROTA":
+			cor = "#1e8e3e"
+		case "FOLGA":
+			cor = "#1967d2"
+		case "FÉRIAS":
+			cor = "#f29900"
+		case "SUSPENSÃO":
+			cor = "#d93025"
 		}
 		textoObs := "Sem observações."
 		if observacao.Valid && observacao.String != "" {
@@ -144,7 +150,6 @@ func (h *Handler) ApiSalvarEvento(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Converte formato ISO do Flatpickr (2026-06-11T12:00) para MySQL (2026-06-11 12:00:00)
 	formatISO := "2006-01-02T15:04"
 	formatMySQL := "2006-01-02 15:04:05"
 
@@ -166,11 +171,38 @@ func (h *Handler) ApiSalvarEvento(w http.ResponseWriter, r *http.Request) {
 		dataFim = parseDate(l.DataFim)
 	}
 
-	// Verificação básica de dados obrigatórios
 	if l.NomeFuncionario == "" || dataInicio == nil {
 		http.Error(w, "Nome do funcionário e data de início são obrigatórios", 400)
 		return
 	}
+
+	// --- VALIDAÇÃO DE CONFLITO DE HORÁRIO ---
+	// Para Entrada e Saída, não checamos conflito. São batidas instantâneas.
+	if l.StatusEvento != "ENTRADA" && l.StatusEvento != "SAÍDA" {
+		var checkFim interface{} = dataFim
+		if checkFim == nil {
+			if t, ok := dataInicio.(string); ok {
+				parsed, _ := time.Parse(formatMySQL, t)
+				checkFim = parsed.Add(time.Hour).Format(formatMySQL)
+			}
+		}
+
+		var conflitoID string
+		queryConflito := `SELECT id FROM eventos_diario 
+                          WHERE nome_funcionario = ? 
+                          AND (
+                              (data_inicio < ? AND data_fim > ?) OR 
+                              (data_inicio < ? AND data_fim IS NULL) OR
+                              (data_inicio IS NULL AND data_fim > ?)
+                          )`
+
+		err := h.DB.QueryRow(queryConflito, l.NomeFuncionario, checkFim, dataInicio, checkFim, dataInicio).Scan(&conflitoID)
+		if err == nil {
+			http.Error(w, fmt.Sprintf("Conflito de horário: O funcionário %s já possui um evento agendado para este período.", l.NomeFuncionario), http.StatusConflict)
+			return
+		}
+	}
+	// ---------------------------------------
 
 	id := fmt.Sprintf("%d", time.Now().UnixNano())
 	query := "INSERT INTO eventos_diario (id, nome_funcionario, cargo, status_evento, data_inicio, data_fim, observacao) VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -270,4 +302,72 @@ func (h *Handler) ApiFuncionariosLegada(w http.ResponseWriter, r *http.Request) 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(nomes)
+}
+
+func (h *Handler) ApiDashboardStats(w http.ResponseWriter, r *http.Request) {
+	var totalFuncionarios int
+	err := h.DB.QueryRow("SELECT COUNT(*) FROM funcionarios").Scan(&totalFuncionarios)
+	if err != nil {
+		log.Println("Erro ao contar funcionários:", err)
+		http.Error(w, "Erro no banco", 500)
+		return
+	}
+
+	today := time.Now().Format("2006-01-02")
+	stats := map[string]int{
+		"ROTA":      0,
+		"FOLGA":     0,
+		"FERIAS":    0,
+		"SUSPENSAO": 0,
+	}
+	detalhes := map[string][]map[string]string{
+		"ROTA":      {},
+		"FOLGA":     {},
+		"FERIAS":    {},
+		"SUSPENSAO": {},
+	}
+
+	query := `
+        SELECT status_evento, nome_funcionario, cargo 
+        FROM eventos_diario 
+        WHERE DATE(data_inicio) = ?
+    `
+	rows, err := h.DB.Query(query, today)
+	if err != nil {
+		log.Println("Erro ao buscar stats de status:", err)
+		http.Error(w, "Erro no banco", 500)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var status, nome, cargo string
+		if err := rows.Scan(&status, &nome, &cargo); err == nil {
+			normStatus := status
+			switch status {
+			case "FÉRIAS":
+				normStatus = "FERIAS"
+			case "SUSPENSÃO":
+				normStatus = "SUSPENSAO"
+			}
+
+			if _, ok := stats[normStatus]; ok {
+				stats[normStatus]++
+				detalhes[normStatus] = append(detalhes[normStatus], map[string]string{
+					"nome":  nome,
+					"cargo": cargo,
+				})
+			}
+		}
+	}
+
+	response := map[string]interface{}{
+		"total_funcionarios": totalFuncionarios,
+		"status_hoje":        stats,
+		"detalhes_status":    detalhes,
+		"data_consulta":      today,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
